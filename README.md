@@ -21,10 +21,11 @@ npm install
 
 # Instalar la librería de internacionalización (i18n)
 npm install next-intl
+```
 
 ## Instrucciones de Ejecución (Docker)
 1. Asegúrese de tener Docker instalado.
-2. Ejecute el comando: `docker-compose up --build`
+2. Ejecute el comando: `docker-compose up --build` o si ya realizó la construcción inicial, puede simplemente ejecutar: `docker compose up`
 3. Acceda a: `http://localhost:3000`
 
 ## Justificaciones Técnicas
