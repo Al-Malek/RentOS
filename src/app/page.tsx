@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { useConfig } from '@/context/ConfigContext'; 
@@ -7,17 +7,31 @@ import { HU1_VehiculoForm } from '@/components/HU1_VehiculoForm';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
 
 export default function Page() {
-  const { vehiculos } = useVehiculos();
+  const { vehiculos: initialVehiculos } = useVehiculos();
   const { t, highContrast } = useConfig(); 
 
+  const [listaVehiculos, setListaVehiculos] = useState<Vehiculo[]>([]);
   const [vehiculoAEditar, setVehiculoAEditar] = useState<Vehiculo | null>(null);
   const [vehiculoDetalle, setVehiculoDetalle] = useState<Vehiculo | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
+  useEffect(() => {
+    setListaVehiculos(initialVehiculos);
+  }, [initialVehiculos]);
+
   const guardarCambios = (vehiculoActualizado: Vehiculo) => {
-    console.log("Datos actualizados:", vehiculoActualizado);
+    setListaVehiculos(prev => 
+      prev.map(v => v.id === vehiculoActualizado.id ? vehiculoActualizado : v)
+    );
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
+  };
+
+  const eliminarVehiculo = (id: number) => {
+    setListaVehiculos(prev => prev.filter(v => v.id !== id));
+    setMostrarFormulario(false);
+    setVehiculoAEditar(null);
+    setVehiculoDetalle(null);
   };
 
   const cardStyle = highContrast 
@@ -36,53 +50,42 @@ export default function Page() {
       </div>
 
       {vehiculoDetalle && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all">
-          <div className={`${highContrast ? 'bg-white text-black' : 'bg-[#121212] text-white'} border ${highContrast ? 'border-gray-400' : 'border-[#00E5FF]/30'} p-0 rounded-3xl max-w-2xl w-full overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.7)] animate-in fade-in zoom-in duration-300`}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+          <div className={`${highContrast ? 'bg-white text-black' : 'bg-[#121212] text-white'} border ${highContrast ? 'border-gray-400' : 'border-[#00E5FF]/40'} p-0 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300`}>
             
             <div className="relative h-72 w-full">
               <img src={vehiculoDetalle.foto} alt={vehiculoDetalle.modelo} className="w-full h-full object-cover" />
-              <div className="absolute top-4 left-4">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${
-                  vehiculoDetalle.estado === 'available' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                }`}>
-                  ● {t('status', vehiculoDetalle.estado)}
-                </span>
-              </div>
               <button 
                 onClick={() => setVehiculoDetalle(null)} 
-                className="absolute top-4 right-4 bg-black/40 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition-all backdrop-blur-md"
+                className="absolute top-4 right-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors"
               >
                 ✕
               </button>
-              <div className={`absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t ${highContrast ? 'from-white' : 'from-[#121212]'} to-transparent`}></div>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#121212] to-transparent h-32"></div>
             </div>
             
             <div className="p-8 -mt-12 relative">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <p className="text-[#00E5FF] font-black text-xs uppercase tracking-[0.3em] mb-1">
-                    {vehiculoDetalle.marca || "RentOS Fleet"}
-                  </p>
-                  <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">
-                    {vehiculoDetalle.modelo}
-                  </h2>
+                  <span className="text-[#00E5FF] font-black text-sm uppercase tracking-[0.2em]">Premium Fleet</span>
+                  <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">{vehiculoDetalle.modelo}</h2>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest">Tarifa Base</p>
-                  <p className="text-4xl font-black text-[#00E5FF]">$45<span className="text-sm text-gray-500 font-medium">/día</span></p>
+                  <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1">Costo de Renta</p>
+                  <p className="text-4xl font-bold text-[#00E5FF]">$55<span className="text-sm text-gray-500 font-normal">/día</span></p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
-                  { label: 'Matrícula', value: vehiculoDetalle.placa, icon: '🆔' },
-                  { label: 'Uso Total', value: vehiculoDetalle.kilometraje, icon: '📍' },
-                  { label: 'Modelo Año', value: '2024', icon: '📅' },
-                  { label: 'Categoría', value: 'Sport Naked', icon: '🏍️' }
-                ].map((spec, i) => (
-                  <div key={i} className={`${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/10'} p-3 rounded-2xl border transition-colors hover:border-[#00E5FF]/50`}>
-                    <p className="text-[9px] uppercase text-gray-500 font-black mb-1 tracking-tighter">{spec.label}</p>
-                    <p className="font-bold text-xs truncate flex items-center gap-1.5">{spec.icon} {spec.value}</p>
+                  { label: 'Placa', value: vehiculoDetalle.placa, icon: '🆔' },
+                  { label: 'Recorrido', value: vehiculoDetalle.kilometraje, icon: '📍' },
+                  { label: 'Año', value: '2023', icon: '📅' },
+                  { label: 'Tipo', value: 'Naked Sport', icon: '🏍️' }
+                ].map((spec, idx) => (
+                  <div key={idx} className={`${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/10'} p-4 rounded-2xl border`}>
+                    <p className="text-[10px] uppercase text-gray-500 font-black mb-1">{spec.label}</p>
+                    <p className="font-bold text-sm flex items-center gap-2">{spec.icon} {spec.value}</p>
                   </div>
                 ))}
               </div>
@@ -90,14 +93,12 @@ export default function Page() {
               <div className="flex gap-4">
                 <button 
                   onClick={() => { setVehiculoDetalle(null); setVehiculoAEditar(vehiculoDetalle); setMostrarFormulario(true); }}
-                  className={`flex-1 py-4 rounded-2xl font-bold transition-all active:scale-95 border ${
-                    highContrast ? 'bg-gray-200 border-gray-400 text-black' : 'bg-white/5 border-white/10 hover:bg-white/10'
-                  }`}
+                  className="flex-1 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-bold transition-all border border-white/10 active:scale-95"
                 >
-                  Editar Ficha
+                  Editar Ficha Técnica
                 </button>
-                <button className="flex-1 bg-[#00E5FF] hover:bg-cyan-300 text-black py-4 rounded-2xl font-black transition-all shadow-[0_10px_30px_rgba(0,229,255,0.3)] active:scale-95 uppercase text-sm tracking-wider">
-                  Confirmar Reserva
+                <button onClick={() => setVehiculoDetalle(null)} className="flex-1 bg-[#00E5FF] hover:bg-cyan-300 text-black py-4 rounded-2xl font-extrabold transition-all shadow-[0_10px_20px_rgba(0,229,255,0.2)] active:scale-95">
+                  Cerrar
                 </button>
               </div>
             </div>
@@ -110,11 +111,12 @@ export default function Page() {
           vehiculo={vehiculoAEditar} 
           onSave={guardarCambios} 
           onCancel={() => setMostrarFormulario(false)} 
+          onDelete={eliminarVehiculo}
         />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-10">
-        {vehiculos.map((moto) => (
+        {listaVehiculos.map((moto) => (
           <div key={moto.id} className={`rounded-xl overflow-hidden transition-all duration-300 group ${cardStyle}`}>
             <div className="h-48 overflow-hidden relative">
               <img src={moto.foto} alt={moto.modelo} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
