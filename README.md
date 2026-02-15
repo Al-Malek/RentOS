@@ -30,4 +30,4 @@ npm install next-intl
 ## Justificaciones Técnicas
 * **Next.js & TypeScript:** Elegidos para asegurar escalabilidad y tipado fuerte, reduciendo errores en tiempo de ejecución.
 * **i18n & a11y:** Implementamos `next-intl` para internacionalización y etiquetas ARIA para accesibilidad, cumpliendo con estándares modernos de inclusión.
-* **Docker:** Garantiza que el entorno de desarrollo sea idéntico al de producción.
+* **Docker:** Garantiza que el entorno de desarrollo sea idéntico al de producción. 
