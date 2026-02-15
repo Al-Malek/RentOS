@@ -1,3 +1,11 @@
+export interface RegistroMantenimiento {
+  id: string;
+  fecha: string;
+  descripcion: string;
+  costo: number;
+  tipo: 'Correctivo' | 'Preventivo';
+}
+
 export interface Vehiculo {
   id: number;
   modelo: string;
@@ -10,6 +18,7 @@ export interface Vehiculo {
   tipo: 'Sport' | 'Adventure' | 'Naked' | 'Cruiser';
   precioDia: number;
   foto: string;
+  historial?: RegistroMantenimiento[];
 }
 
 export const HU1_VehiculosMock: Vehiculo[] = [
