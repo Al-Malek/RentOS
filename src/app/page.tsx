@@ -3,18 +3,16 @@ import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { useConfig } from '@/context/ConfigContext'; 
-import { HU1_VehiculoForm } from '@/components/HU1_VehiculoForm'; // Importamos tu formulario
+import { HU1_VehiculoForm } from '@/components/HU1_VehiculoForm'; 
 import { Vehiculo } from '@/data/HU1_VehiculosData';
 
 export default function Page() {
   const { vehiculos } = useVehiculos();
   const { t, highContrast } = useConfig(); 
 
-  // --- NUEVOS ESTADOS PARA DETALLES Y EDICIÓN ---
   const [vehiculoAEditar, setVehiculoAEditar] = useState<Vehiculo | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  // Función para ver detalles (Simulada con un alert profesional o podrías crear otro modal)
   const verDetalles = (moto: Vehiculo) => {
     alert(`
       🔍 DETALLES TÉCNICOS:
@@ -28,16 +26,13 @@ export default function Page() {
     `);
   };
 
-  // Función para abrir el lápiz (editar)
   const abrirEdicion = (moto: Vehiculo) => {
     setVehiculoAEditar(moto);
     setMostrarFormulario(true);
   };
 
-  // Función para guardar cambios
   const guardarCambios = (vehiculoActualizado: Vehiculo) => {
     console.log("Guardando datos en la base...", vehiculoActualizado);
-    // Aquí luego conectarías con una función que actualice el Mock o la DB
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
   };
@@ -59,7 +54,6 @@ export default function Page() {
         </p>
       </div>
 
-      {/* --- RENDERIZADO DEL FORMULARIO DE EDICIÓN --- */}
       {mostrarFormulario && (
         <HU1_VehiculoForm 
           vehiculo={vehiculoAEditar} 
@@ -111,7 +105,6 @@ export default function Page() {
               </div>
 
               <div className="flex gap-2 mt-auto">
-                {/* BOTÓN DETALLES ACTUALIZADO */}
                 <button 
                   onClick={() => verDetalles(moto)}
                   className="flex-1 bg-[#00E5FF] text-black font-bold py-2 rounded-lg text-sm hover:bg-cyan-300 transition shadow-sm"
@@ -119,7 +112,6 @@ export default function Page() {
                   {t('card', 'btn_details')}
                 </button>
                 
-                {/* BOTÓN LÁPIZ ACTUALIZADO */}
                 <button 
                   onClick={() => abrirEdicion(moto)}
                   className={`px-3 py-2 rounded-lg transition ${
