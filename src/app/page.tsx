@@ -1,65 +1,54 @@
-import Image from "next/image";
-
-export default function Home() {
+import { vehiculosMock } from '../data/vehiculos';
+export default function GestionVehiculos() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-[#121212] text-white p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header inspirado en Figma */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-[#00E5FF]">MIS VEHICULOS</h1>
+          <button className="bg-[#00E5FF] text-black font-bold py-2 px-6 rounded-full hover:bg-cyan-400 transition">
+            + AGREGAR NUEVO VEHICULO
+          </button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Tabla Desktop [cite: 211] */}
+        <div className="bg-[#1E1E1E] rounded-xl overflow-hidden shadow-2xl border border-gray-800">
+          <table className="w-full text-left">
+            <thead className="bg-[#252525] text-gray-400 uppercase text-sm">
+              <tr>
+                <th className="p-4">Foto</th>
+                <th className="p-4">Modelo</th>
+                <th className="p-4">Placa</th>
+                <th className="p-4">Kilometraje</th>
+                <th className="p-4 text-center">Estado</th>
+                <th className="p-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {vehiculosMock.map((moto) => (
+                <tr key={moto.id} className="hover:bg-[#2A2A2A] transition">
+                  <td className="p-4">
+                    <img src={moto.foto} alt={moto.modelo} className="w-20 h-12 object-cover rounded-md border border-gray-700" />
+                  </td>
+                  <td className="p-4 font-semibold">{moto.modelo}</td>
+                  <td className="p-4 text-gray-300">{moto.placa}</td>
+                  <td className="p-4 text-gray-300">{moto.kilometraje}</td>
+                  <td className="p-4 text-center">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      moto.estado === 'Disponible' ? 'bg-green-900 text-green-400' : 'bg-orange-900 text-orange-400'
+                    }`}>
+                      {moto.estado}
+                    </span>
+                  </td>
+                  <td className="p-4 text-center">
+                    <button className="bg-gray-700 px-4 py-1 rounded text-sm hover:bg-gray-600 transition">Editar</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
