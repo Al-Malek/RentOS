@@ -19,10 +19,15 @@ export default function Page() {
     setListaVehiculos(initialVehiculos);
   }, [initialVehiculos]);
 
-  const guardarCambios = (vehiculoActualizado: Vehiculo) => {
-    setListaVehiculos(prev => 
-      prev.map(v => v.id === vehiculoActualizado.id ? vehiculoActualizado : v)
-    );
+  const guardarCambios = (vehiculo: Vehiculo) => {
+    if (vehiculo.id === 0) {
+      const nuevoVehiculo = { ...vehiculo, id: Date.now() };
+      setListaVehiculos(prev => [nuevoVehiculo, ...prev]);
+    } else {
+      setListaVehiculos(prev => 
+        prev.map(v => v.id === vehiculo.id ? vehiculo : v)
+      );
+    }
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
   };
@@ -34,6 +39,11 @@ export default function Page() {
     setVehiculoDetalle(null);
   };
 
+  const abrirCreacion = () => {
+    setVehiculoAEditar(null); 
+    setMostrarFormulario(true);
+  };
+
   const cardStyle = highContrast 
     ? 'bg-white border-2 border-gray-200 shadow-md text-black' 
     : 'bg-[#1E1E1E] border border-gray-800 text-white hover:border-[#00E5FF] shadow-lg';
@@ -42,11 +52,20 @@ export default function Page() {
 
   return (
     <MainLayout>
-      <div className="mb-8">
-        <h2 className={`text-3xl font-bold mb-1 ${highContrast ? 'text-black' : 'text-white'}`}>
-          {t('home', 'title')}
-        </h2>
-        <p className={textSecondary}>{t('home', 'subtitle')}</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h2 className={`text-3xl font-bold mb-1 ${highContrast ? 'text-black' : 'text-white'}`}>
+            {t('home', 'title')}
+          </h2>
+          <p className={textSecondary}>{t('home', 'subtitle')}</p>
+        </div>
+        
+        <button 
+          onClick={abrirCreacion}
+          className="bg-[#00E5FF] hover:bg-cyan-300 text-black font-black px-6 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)] active:scale-95 flex items-center gap-2 uppercase text-xs tracking-widest"
+        >
+          <span className="text-xl">+</span> Añadir Vehículo
+        </button>
       </div>
 
       {vehiculoDetalle && (
@@ -55,12 +74,7 @@ export default function Page() {
             
             <div className="relative h-72 w-full">
               <img src={vehiculoDetalle.foto} alt={vehiculoDetalle.modelo} className="w-full h-full object-cover" />
-              <button 
-                onClick={() => setVehiculoDetalle(null)} 
-                className="absolute top-4 right-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
+              <button onClick={() => setVehiculoDetalle(null)} className="absolute top-4 right-4 bg-black/50 hover:bg-black text-white w-10 h-10 rounded-full flex items-center justify-center">✕</button>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#121212] to-transparent h-32"></div>
             </div>
             
@@ -134,10 +148,9 @@ export default function Page() {
               </div>
               
               <div className={`text-sm mb-4 space-y-2 ${textSecondary}`}>
-                <p>📍 <span className="font-medium">{t('card', 'km')}:</span> {moto.kilometraje}</p>
-                <p>🔧 <span className="font-medium">{t('card', 'maint')}:</span> 500km</p>
+                <p><span className="font-medium">{t('card', 'km')}:</span> {moto.kilometraje.toLocaleString()} km</p>
+                <p>🔧 <span className="font-medium">Mantenimiento:</span> en {moto.proximoMantenimiento} km</p>             
               </div>
-
               <div className="flex gap-2">
                 <button 
                   onClick={() => setVehiculoDetalle(moto)}
