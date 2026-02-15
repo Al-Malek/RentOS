@@ -25,10 +25,21 @@ npm install next-intl
 
 ## Instrucciones de Ejecución (Docker)
 1. Asegúrese de tener Docker instalado.
-2. Ejecute el comando: `docker-compose up --build` o si ya realizó la construcción inicial, puede simplemente ejecutar: `docker compose up`
+2. Ejecute el comando: `docker-compose up --build` o si ya realizó la construcción inicial, puede simplemente ejecutar:
+ `docker compose up`
 3. Acceda a: `http://localhost:3000`
 
 ## Justificaciones Técnicas
 * **Next.js & TypeScript:** Elegidos para asegurar escalabilidad y tipado fuerte, reduciendo errores en tiempo de ejecución.
 * **i18n & a11y:** Implementamos `next-intl` para internacionalización y etiquetas ARIA para accesibilidad, cumpliendo con estándares modernos de inclusión.
 * **Docker:** Garantiza que el entorno de desarrollo sea idéntico al de producción. 
+
+
+
+
+* Borrar
+docker compose down
+docker system prune -f
+docker compose up --build
+docker compose build --no-cache
+docker compose up
