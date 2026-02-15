@@ -1,5 +1,7 @@
 "use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useConfig } from '@/context/ConfigContext';
 
 const MenuIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
@@ -8,52 +10,91 @@ const UserIcon = () => <svg className="w-8 h-8" fill="none" stroke="currentColor
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const { highContrast, toggleContrast, lang, toggleLang, t } = useConfig();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const theme = {
     wrapper: highContrast ? 'bg-white text-black' : 'bg-[#0a0a0a] text-gray-200',
     sidebar: highContrast ? 'bg-gray-100 border-r border-gray-300' : 'bg-[#121212] border-r border-gray-800',
     header: highContrast ? 'bg-white border-b border-gray-300' : 'bg-[#0a0a0a] border-b border-gray-800',
     input: highContrast ? 'bg-gray-100 border border-gray-400 text-black' : 'bg-gray-800 text-white',
-    sidebarActive: 'bg-[#00E5FF] text-black font-bold',
+    sidebarActive: 'bg-[#00E5FF] text-black font-black shadow-[0_0_15px_rgba(0,229,255,0.3)]',
     sidebarLink: highContrast ? 'text-gray-600 hover:bg-gray-200' : 'text-gray-400 hover:bg-gray-800',
   };
 
-  const menuItems = ['vehiculos', 'reservas', 'clientes', 'reportes', 'taller', 'tarifas'];
+
+  const menuItems = [
+    { id: 'vehiculos', label: 'vehiculos', path: '/' },
+    { id: 'taller', label: 'taller', path: '/taller' },
+    { id: 'reservas', label: 'reservas', path: '/reservas' },
+    { id: 'clientes', label: 'clientes', path: '/clientes' },
+    { id: 'reportes', label: 'reportes', path: '/reportes' },
+  ];
 
   return (
     <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300 ${theme.wrapper}`}>
-      <aside className={`hidden md:flex flex-col w-64 ${theme.sidebar} min-h-screen`}>
-        <div className="p-6 text-2xl font-bold text-center">
+      
+      <aside className={`hidden md:flex flex-col w-64 ${theme.sidebar} min-h-screen sticky top-0`}>
+        <div className="p-8 text-2xl font-black italic tracking-tighter">
           RENT<span className="text-[#00E5FF]">OS</span>
         </div>
-        <nav className="flex-1 px-2 space-y-2 mt-4">
-          {menuItems.map((item) => (
-            <button key={item} className={`w-full text-left px-6 py-3 rounded-lg transition-all ${item === 'vehiculos' ? theme.sidebarActive : theme.sidebarLink}`}>
-              {t('nav', item).toUpperCase()}
-            </button>
-          ))}
+        
+        <nav className="flex-1 px-3 space-y-2 mt-4">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link 
+                key={item.id} 
+                href={item.path}
+                className={`flex items-center w-full px-6 py-3.5 rounded-xl transition-all duration-200 uppercase text-[11px] tracking-widest ${
+                  isActive ? theme.sidebarActive : theme.sidebarLink
+                }`}
+              >
+                {t('nav', item.label)}
+              </Link>
+            );
+          })}
         </nav>
+
+        <div className="p-6 border-t border-white/5">
+            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">v1.0.4 - 2026</p>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className={`flex justify-between items-center p-4 ${theme.header}`}>
-          <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}><MenuIcon /></button>
-          <div className={`hidden md:flex flex-1 mx-8 rounded-full px-4 py-2 max-w-lg ${theme.input}`}>
-            <input type="text" placeholder={t('header', 'search')} className="bg-transparent outline-none w-full" />
-            <span>🔍</span>
+        <header className={`flex justify-between items-center p-4 px-8 ${theme.header}`}>
+          <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <MenuIcon />
+          </button>
+
+          <div className={`hidden md:flex flex-1 mx-8 rounded-2xl px-5 py-2.5 max-w-xl ${theme.input} items-center`}>
+            <input 
+              type="text" 
+              placeholder={t('header', 'search')} 
+              className="bg-transparent outline-none w-full text-sm font-medium" 
+            />
+            <span className="opacity-50">🔍</span>
           </div>
-          <div className="flex items-center space-x-3">
-            <button onClick={toggleContrast} className="text-xs border px-3 py-1 rounded-full border-current hover:opacity-70 transition">
-               {highContrast ? t('a11y', 'dark') : t('a11y', 'light')}
+
+          <div className="flex items-center space-x-4">
+            <button onClick={toggleContrast} className="text-[10px] font-bold border px-4 py-1.5 rounded-full border-current hover:bg-current hover:text-black transition-all">
+               {highContrast ? 'Modo Oscuro' : 'Modo Claro'}
             </button>
-            <button onClick={toggleLang} className="text-xs border px-3 py-1 rounded-full border-current hover:opacity-70 transition">
+            
+            <button onClick={toggleLang} className="text-[10px] font-bold border px-4 py-1.5 rounded-full border-current hover:bg-current hover:text-black transition-all">
               {lang === 'es' ? '🇺🇸 EN' : '🇪🇸 ES'}
             </button>
-            <button className="bg-[#00E5FF] text-black px-4 py-2 rounded-full font-bold shadow-lg hidden sm:block">+ {t('header', 'ticket')}</button>
-            <div className={`p-2 rounded-full ${highContrast ? 'bg-gray-200 text-black' : 'bg-gray-700 text-white'}`}><UserIcon /></div>
+
+            <div className={`p-2 rounded-xl ${highContrast ? 'bg-gray-200 text-black border border-gray-300' : 'bg-white/5 text-white border border-white/10'}`}>
+              <UserIcon />
+            </div>
           </div>
         </header>
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+
+        <main className="flex-1 p-8 overflow-auto bg-transparent">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
