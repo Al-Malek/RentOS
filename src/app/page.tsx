@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { useConfig } from '@/context/ConfigContext'; 
@@ -7,33 +7,28 @@ import { HU1_VehiculoForm } from '@/components/HU1_VehiculoForm';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
 
 export default function Page() {
-  const { vehiculos: initialVehiculos } = useVehiculos();
+  const { vehiculos, setVehiculos } = useVehiculos();
   const { t, highContrast } = useConfig(); 
 
-  const [listaVehiculos, setListaVehiculos] = useState<Vehiculo[]>([]);
   const [vehiculoAEditar, setVehiculoAEditar] = useState<Vehiculo | null>(null);
   const [vehiculoDetalle, setVehiculoDetalle] = useState<Vehiculo | null>(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
-  useEffect(() => {
-    setListaVehiculos(initialVehiculos);
-  }, [initialVehiculos]);
-
   const guardarCambios = (vehiculo: Vehiculo) => {
+    let nuevaLista;
     if (vehiculo.id === 0) {
-      const nuevoVehiculo = { ...vehiculo, id: Date.now() };
-      setListaVehiculos(prev => [nuevoVehiculo, ...prev]);
+      nuevaLista = [{ ...vehiculo, id: Date.now() }, ...vehiculos];
     } else {
-      setListaVehiculos(prev => 
-        prev.map(v => v.id === vehiculo.id ? vehiculo : v)
-      );
+      nuevaLista = vehiculos.map(v => v.id === vehiculo.id ? vehiculo : v);
     }
+    setVehiculos(nuevaLista); 
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
   };
 
   const eliminarVehiculo = (id: number) => {
-    setListaVehiculos(prev => prev.filter(v => v.id !== id));
+    const nuevaLista = vehiculos.filter(v => v.id !== id);
+    setVehiculos(nuevaLista);
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
     setVehiculoDetalle(null);
@@ -81,21 +76,21 @@ export default function Page() {
             <div className="p-8 -mt-12 relative">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <span className="text-[#00E5FF] font-black text-sm uppercase tracking-[0.2em]">Premium Fleet</span>
+                  <span className="text-[#00E5FF] font-black text-sm uppercase tracking-[0.2em]">{vehiculoDetalle.marca}</span>
                   <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">{vehiculoDetalle.modelo}</h2>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1">Costo de Renta</p>
-                  <p className="text-4xl font-bold text-[#00E5FF]">$55<span className="text-sm text-gray-500 font-normal">/día</span></p>
+                  <p className="text-4xl font-bold text-[#00E5FF]">${vehiculoDetalle.precioDia}<span className="text-sm text-gray-500 font-normal">/día</span></p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
                   { label: 'Placa', value: vehiculoDetalle.placa, icon: '🆔' },
-                  { label: 'Recorrido', value: vehiculoDetalle.kilometraje, icon: '📍' },
-                  { label: 'Año', value: '2023', icon: '📅' },
-                  { label: 'Tipo', value: 'Naked Sport', icon: '🏍️' }
+                  { label: 'Recorrido', value: `${vehiculoDetalle.kilometraje.toLocaleString()} km`, icon: '📍' },
+                  { label: 'Año', value: vehiculoDetalle.anio, icon: '📅' },
+                  { label: 'Tipo', value: vehiculoDetalle.tipo, icon: '🏍️' }
                 ].map((spec, idx) => (
                   <div key={idx} className={`${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/10'} p-4 rounded-2xl border`}>
                     <p className="text-[10px] uppercase text-gray-500 font-black mb-1">{spec.label}</p>
@@ -130,7 +125,7 @@ export default function Page() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-10">
-        {listaVehiculos.map((moto) => (
+        {vehiculos.map((moto) => (
           <div key={moto.id} className={`rounded-xl overflow-hidden transition-all duration-300 group ${cardStyle}`}>
             <div className="h-48 overflow-hidden relative">
               <img src={moto.foto} alt={moto.modelo} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
@@ -139,9 +134,13 @@ export default function Page() {
 
             <div className="p-5">
               <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-bold leading-tight">{moto.modelo}</h3>
+                <div>
+                  <p className="text-[#00E5FF] text-[10px] font-bold uppercase mb-1">{moto.marca}</p>
+                  <h3 className="text-lg font-bold leading-tight">{moto.modelo}</h3>
+                </div>
                 <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
-                  moto.estado === 'available' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  moto.estado === 'available' ? 'bg-green-500/20 text-green-400' : 
+                  moto.estado === 'maintenance' ? 'bg-orange-500/20 text-orange-400' : 'bg-red-500/20 text-red-400'
                 }`}>
                   {t('status', moto.estado)}
                 </span>
@@ -151,7 +150,8 @@ export default function Page() {
                 <p><span className="font-medium">{t('card', 'km')}:</span> {moto.kilometraje.toLocaleString()} km</p>
                 <p>🔧 <span className="font-medium">Mantenimiento:</span> en {moto.proximoMantenimiento} km</p>             
               </div>
-              <div className="flex gap-2">
+
+              <div className="flex gap-2 mt-auto">
                 <button 
                   onClick={() => setVehiculoDetalle(moto)}
                   className="flex-1 bg-[#00E5FF] text-black font-bold py-2 rounded-lg text-sm hover:bg-cyan-300 transition-colors shadow-sm"
@@ -161,7 +161,7 @@ export default function Page() {
                 <button 
                   onClick={() => { setVehiculoAEditar(moto); setMostrarFormulario(true); }}
                   className={`px-3 py-2 rounded-lg transition-colors ${
-                    highContrast ? 'bg-gray-100 text-black border border-gray-300' : 'bg-gray-800 text-white'
+                    highContrast ? 'bg-gray-100 text-black border border-gray-300' : 'bg-gray-800 text-white hover:bg-gray-700'
                   }`}
                 >
                   ✏️

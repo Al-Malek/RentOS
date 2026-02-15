@@ -1,32 +1,22 @@
-import { useState } from 'react';
-import { HU1_VehiculosMock, Vehiculo } from '@/data/HU1_VehiculosData';
+import { useState, useEffect } from 'react';
+import { Vehiculo, HU1_VehiculosMock } from '@/data/HU1_VehiculosData';
 
 export const useVehiculos = () => {
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>(HU1_VehiculosMock);
+  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
 
-  const agregarVehiculo = (nuevoVehiculo: Vehiculo) => {
-    const existe = vehiculos.some((v) => v.placa.toUpperCase() === nuevoVehiculo.placa.toUpperCase());
-    
-    if (existe) {
-      alert(`Error: La placa ${nuevoVehiculo.placa} ya existe en la flota.`);
-      return false; 
+  useEffect(() => {
+    const saved = localStorage.getItem('rentos_flota');
+    if (saved) {
+      setVehiculos(JSON.parse(saved));
+    } else {
+      setVehiculos(HU1_VehiculosMock);
     }
+  }, []);
 
-    setVehiculos([...vehiculos, { ...nuevoVehiculo, id: Date.now() }]); 
-    return true; 
+  const saveToDisk = (nuevaLista: Vehiculo[]) => {
+    setVehiculos(nuevaLista);
+    localStorage.setItem('rentos_flota', JSON.stringify(nuevaLista));
   };
 
-  const editarVehiculo = (vehiculoActualizado: Vehiculo) => {
-    setVehiculos((prev) => 
-      prev.map((v) => (v.id === vehiculoActualizado.id ? vehiculoActualizado : v))
-    );
-  };
-
-  const eliminarVehiculo = (id: number) => {
-    if (confirm('¿Estás seguro de eliminar este vehículo?')) {
-      setVehiculos((prev) => prev.filter((v) => v.id !== id));
-    }
-  };
-
-  return { vehiculos, agregarVehiculo, editarVehiculo, eliminarVehiculo };
+  return { vehiculos, setVehiculos: saveToDisk };
 };
