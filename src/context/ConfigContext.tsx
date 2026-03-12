@@ -3,7 +3,19 @@ import React, { createContext, useContext, useState } from 'react';
 
 const dictionary = {
   es: {
-    nav: { vehiculos: 'Vehículos', reservas: 'Reservas', clientes: 'Clientes', reportes: 'Reportes', taller: 'Taller', tarifas: 'Tarifas' },
+    nav: { 
+      dashboard: 'Dashboard',
+      vehiculos: 'Vehículos', 
+      reservas: 'Reservas', 
+      clientes: 'Clientes', 
+      reportes: 'Reportes', 
+      taller: 'Taller', 
+      tarifas: 'Tarifas',
+      calendario: 'Calendario',
+      notificaciones: 'Notificaciones',
+      asistente: 'Asistente IA',
+      superadmin: 'Super Admin'
+    },
     header: { search: 'Buscar placa...', ticket: 'ABRIR NUEVO TICKET' },
     home: { title: 'Gestión de Flota', subtitle: 'Administración y control de inventario' },
     card: { km: 'Kilometraje', maint: 'Mantenimiento', btn_details: 'Detalles' },
@@ -11,7 +23,19 @@ const dictionary = {
     a11y: { dark: 'Modo Oscuro 🌙', light: 'Modo Claro ☀️' }
   },
   en: {
-    nav: { vehiculos: 'Vehicles', reservas: 'Bookings', clientes: 'Clients', reportes: 'Reports', taller: 'Workshop', tarifas: 'Rates' },
+    nav: { 
+      dashboard: 'Dashboard',
+      vehiculos: 'Vehicles', 
+      reservas: 'Bookings', 
+      clientes: 'Clients', 
+      reportes: 'Reports', 
+      taller: 'Workshop', 
+      tarifas: 'Rates',
+      calendario: 'Calendar',
+      notificaciones: 'Notifications',
+      asistente: 'AI Assistant',
+      superadmin: 'Super Admin'
+    },
     header: { search: 'Search plate...', ticket: 'OPEN NEW TICKET' },
     home: { title: 'Fleet Management', subtitle: 'Inventory control and administration' },
     card: { km: 'Mileage', maint: 'Maintenance', btn_details: 'Details' },

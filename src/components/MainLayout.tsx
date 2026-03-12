@@ -23,11 +23,20 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
 
   const menuItems = [
-    { id: 'vehiculos', label: 'vehiculos', path: '/' },
-    { id: 'taller', label: 'taller', path: '/taller' },
-    { id: 'reservas', label: 'reservas', path: '/reservas' },
-    { id: 'clientes', label: 'clientes', path: '/clientes' },
-    { id: 'reportes', label: 'reportes', path: '/reportes' },
+    { id: 'dashboard', label: 'dashboard', path: '/dashboard', icon: '🏠' },
+    { id: 'vehiculos', label: 'vehiculos', path: '/dashboard/vehiculos', icon: '🏍️' },
+    { id: 'taller', label: 'taller', path: '/dashboard/taller', icon: '🔧' },
+    { id: 'tarifas', label: 'tarifas', path: '/dashboard/tarifas', icon: '💰' },
+    { id: 'reservas', label: 'reservas', path: '/dashboard/reservas', icon: '📅' },
+    { id: 'calendario', label: 'calendario', path: '/dashboard/calendario', icon: '📆' },
+    { id: 'clientes', label: 'clientes', path: '/dashboard/clientes', icon: '👥' },
+    { id: 'notificaciones', label: 'notificaciones', path: '/dashboard/notificaciones', icon: '🔔' },
+    { id: 'reportes', label: 'reportes', path: '/dashboard/reportes', icon: '📊' },
+    { id: 'asistente', label: 'asistente', path: '/dashboard/asistente-ia', icon: '🤖' },
+  ];
+
+  const superAdminItems = [
+    { id: 'superadmin', label: 'superadmin', path: '/superadmin/tenants', icon: '🌐' },
   ];
 
   return (
@@ -45,14 +54,33 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <Link 
                 key={item.id} 
                 href={item.path}
-                className={`flex items-center w-full px-6 py-3.5 rounded-xl transition-all duration-200 uppercase text-[11px] tracking-widest ${
+                className={`flex items-center gap-3 w-full px-6 py-3.5 rounded-xl transition-all duration-200 uppercase text-[11px] tracking-widest ${
                   isActive ? theme.sidebarActive : theme.sidebarLink
                 }`}
               >
+                <span className="text-base">{item.icon}</span>
                 {t('nav', item.label)}
               </Link>
             );
           })}
+          
+          <div className="pt-4 mt-4 border-t border-gray-800">
+            {superAdminItems.map((item) => {
+              const isActive = pathname === item.path;
+              return (
+                <Link 
+                  key={item.id} 
+                  href={item.path}
+                  className={`flex items-center gap-3 w-full px-6 py-3.5 rounded-xl transition-all duration-200 uppercase text-[11px] tracking-widest ${
+                    isActive ? theme.sidebarActive : theme.sidebarLink
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span>
+                  {t('nav', item.label)}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
         <div className="p-6 border-t border-white/5">
