@@ -6,6 +6,7 @@ describe('useTenants', () => {
     localStorage.clear();
   });
 
+  // # Esta prueba es la 1 para la HU 4.2
   it('creates unique tenant IDs', async () => {
     const { result } = renderHook(() => useTenants());
 
@@ -40,6 +41,7 @@ describe('useTenants', () => {
     expect(firstTenantId).toContain('TEN-');
   });
 
+  // # Esta prueba es la 2 para la HU 4.2
   it('toggles tenant status between active and suspended', async () => {
     const { result } = renderHook(() => useTenants());
 
@@ -55,6 +57,7 @@ describe('useTenants', () => {
     expect(result.current.tenants.find((tenant) => tenant.id === target!.id)?.estado).toBe('suspendido');
   });
 
+  // # Esta prueba es la 3 para la HU 4.2
   it('validates fleet limit per tenant plan', async () => {
     const { result } = renderHook(() => useTenants());
 

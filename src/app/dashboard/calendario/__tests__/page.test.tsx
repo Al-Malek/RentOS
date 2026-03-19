@@ -46,6 +46,7 @@ jest.mock('@/hooks/useReservas', () => ({
 }));
 
 describe('CalendarioPage (HU 2.2)', () => {
+  // # Esta prueba es la 2 para la HU 2.2
   it('opens detail modal when clicking occupied cell', () => {
     render(<CalendarioPage />);
 
@@ -55,6 +56,7 @@ describe('CalendarioPage (HU 2.2)', () => {
     expect(screen.getByRole('dialog', { name: /detalle de ocupación/i })).toBeInTheDocument();
   });
 
+  // # Esta prueba es la 3 para la HU 2.2
   it('renders quick access link to create reservations', () => {
     render(<CalendarioPage />);
 

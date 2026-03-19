@@ -145,6 +145,7 @@ describe('useClientes', () => {
     expect(result.current.clientes.find(c => c.id === clientId)).toBeUndefined();
   });
 
+  // # Esta prueba es la 3 para la HU 3.1
   it('searches clients by name, document, phone or email', async () => {
     const { result } = renderHook(() => useClientes());
 

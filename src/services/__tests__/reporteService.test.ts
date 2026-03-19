@@ -24,6 +24,7 @@ describe('reporteService', () => {
     jest.clearAllMocks();
   });
 
+  // # Esta prueba es la 3 para la HU 4.3
   it('exports report data to PDF', () => {
     const filters: ReportFilters = {
       fechaInicio: '2026-03-01',

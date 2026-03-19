@@ -31,6 +31,7 @@ describe('useReportes helpers', () => {
     buildReserva('res-3', '2026-04-02', 'efectivo', 200),
   ];
 
+  // # Esta prueba es la 1 para la HU 4.3
   it('filters transactions by date range', () => {
     const result = filterTransactionsByDateRange(reservas, '2026-03-01', '2026-03-31');
 
@@ -39,6 +40,7 @@ describe('useReportes helpers', () => {
     expect(result[1].id).toBe('res-2');
   });
 
+  // # Esta prueba es la 2 para la HU 4.3
   it('filters transactions by payment method', () => {
     const result = filterTransactionsByPaymentMethod(reservas, 'tarjeta_credito');
 

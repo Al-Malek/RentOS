@@ -2,6 +2,7 @@ import { buildFleetStatusData, calculateComparison } from '@/hooks/analytics.uti
 import { Vehiculo } from '@/data/HU1_VehiculosData';
 
 describe('analytics.utils', () => {
+  // # Esta prueba es la 2 para la HU 4.1
   it('processes fleet status data for pie chart', () => {
     const vehiculos = [
       { id: 1, estado: 'available' },
@@ -19,6 +20,7 @@ describe('analytics.utils', () => {
     ]);
   });
 
+  // # Esta prueba es la 3 para la HU 4.1
   it('calculates monthly comparison percentage and trend', () => {
     const result = calculateComparison(1200, 1000);
 

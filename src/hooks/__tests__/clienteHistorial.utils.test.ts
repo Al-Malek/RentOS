@@ -4,6 +4,7 @@ import { Reserva } from '@/data/HU3_ReservasData';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
 
 describe('clienteHistorial.utils (HU 3.2)', () => {
+  // # Esta prueba es la 1 para la HU 3.2
   it('calculates historical LTV from reservations', () => {
     const cliente: Cliente = {
       id: 'cli-1',
@@ -45,5 +46,32 @@ describe('clienteHistorial.utils (HU 3.2)', () => {
     expect(stats.ltv).toBe(300);
     expect(stats.reservasTotales).toBe(2);
     expect(stats.topVehiculos.length).toBeGreaterThan(0);
+  });
+
+  it('flags high risk when incidents are repeated or expensive', () => {
+    const cliente: Cliente = {
+      id: 'cli-2',
+      nombre: 'Riesgo',
+      tipoDocumento: 'CC',
+      numeroDocumento: '999',
+      telefono: '300',
+      email: 'riesgo@test.com',
+      fechaNacimiento: '1991-01-01',
+      licencia: { numero: 'LIC-2', categoria: 'A2', fechaVencimiento: '2030-01-01' },
+      direccion: 'Test',
+      reservasTotales: 0,
+      totalGastado: 0,
+      cancelaciones: 0,
+      score: 40,
+      incidentes: [
+        { id: 'inc-1', tipo: 'multa', descripcion: 'A', fecha: '2026-01-01', monto: 200 },
+        { id: 'inc-2', tipo: 'dano', descripcion: 'B', fecha: '2026-01-02', monto: 150 },
+      ],
+    };
+
+    const stats = buildClienteHistorialStats(cliente, [], []);
+
+    expect(stats.riesgoAlto).toBe(true);
+    expect(stats.totalMultas).toBe(350);
   });
 });

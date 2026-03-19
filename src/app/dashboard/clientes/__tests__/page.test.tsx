@@ -17,6 +17,7 @@ jest.mock('@/hooks/useClientes', () => ({
 }));
 
 describe('ClientesPage (HU 3.1)', () => {
+  // # Esta prueba es la 1 para la HU 3.1
   it('renders customer form fields in modal', () => {
     render(<ClientesPage />);
 

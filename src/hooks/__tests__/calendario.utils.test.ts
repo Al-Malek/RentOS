@@ -3,6 +3,7 @@ import { Vehiculo } from '@/data/HU1_VehiculosData';
 import { filterVehiculosForCalendar, getVehicleDayReservations } from '@/hooks/calendario.utils';
 
 describe('calendario.utils (HU 2.2)', () => {
+  // # Esta prueba es la 1 para la HU 2.2
   it('filters vehicles by type and state', () => {
     const vehiculos: Vehiculo[] = [
       { id: 1, marca: 'A', modelo: 'M1', anio: 2024, placa: 'A1', kilometraje: 1000, proximoMantenimiento: 100, estado: 'available', tipo: 'Naked', precioDia: 50, foto: 'x' },
@@ -15,6 +16,7 @@ describe('calendario.utils (HU 2.2)', () => {
     expect(result[0].id).toBe(2);
   });
 
+  // # Esta prueba es la 2 para la HU 2.2
   it('gets day reservations for a vehicle', () => {
     const reservas: Reserva[] = [
       {

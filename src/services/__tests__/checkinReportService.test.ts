@@ -17,6 +17,7 @@ describe('checkinReportService (HU 2.3)', () => {
     jest.clearAllMocks();
   });
 
+  // # Esta prueba es la 3 para la HU 2.3
   it('creates and downloads damage report PDF', () => {
     generateDamageReportPDF({
       reserva: {

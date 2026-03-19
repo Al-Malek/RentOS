@@ -7,6 +7,7 @@ import {
 } from '@/hooks/reservas.utils';
 
 describe('reservas.utils (HU 2.1)', () => {
+  // # Esta prueba es la 1 para la HU 2.1
   it('prevents overbooking on overlapping dates', () => {
     const reservas: Reserva[] = [
       {
@@ -32,6 +33,7 @@ describe('reservas.utils (HU 2.1)', () => {
     expect(conflict).toBe(true);
   });
 
+  // # Esta prueba es la 2 para la HU 2.1
   it('calculates total and deposit automatically', () => {
     const result = calculateReservationAmounts(100, 3, 50);
 
@@ -40,6 +42,7 @@ describe('reservas.utils (HU 2.1)', () => {
     expect(result.deposito).toBe(70);
   });
 
+  // # Esta prueba es la 3 para la HU 2.1
   it('validates client license expiry by reservation date', () => {
     const cliente: Cliente = {
       id: 'cli-1',

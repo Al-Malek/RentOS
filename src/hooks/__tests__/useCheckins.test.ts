@@ -7,6 +7,7 @@ describe('useCheckins (HU 2.3)', () => {
     localStorage.clear();
   });
 
+  // # Esta prueba es la 1 para la HU 2.3
   it('saves checklist in local storage', () => {
     const { result } = renderHook(() => useCheckins());
 
@@ -28,6 +29,7 @@ describe('useCheckins (HU 2.3)', () => {
     expect(persisted[0].checklist.llantas).toBe(false);
   });
 
+  // # Esta prueba es la 2 para la HU 2.3
   it('validates numeric fields', () => {
     expect(validateInspectionNumbers(-1, 80)).toContain('kilometraje');
     expect(validateInspectionNumbers(1000, 101)).toContain('combustible');

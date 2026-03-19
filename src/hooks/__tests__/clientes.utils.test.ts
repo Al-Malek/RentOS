@@ -6,6 +6,7 @@ describe('clientes.utils (HU 3.1)', () => {
     expect(age).toBe(26);
   });
 
+  // # Esta prueba es la 2 para la HU 3.1
   it('validates legal age correctly', () => {
     expect(isAdult('2010-01-01')).toBe(false);
     expect(isAdult('1998-05-20')).toBe(true);

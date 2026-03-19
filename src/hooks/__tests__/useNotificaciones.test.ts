@@ -139,6 +139,7 @@ describe('useNotificaciones', () => {
     });
   });
 
+  // # Esta prueba es la 3 para la HU 3.3
   it('processes 24h queue and registers send logs', async () => {
     const { result } = renderHook(() => useNotificaciones());
 

@@ -54,12 +54,20 @@ jest.mock('@/hooks/useVehiculos', () => ({
 }));
 
 describe('ClienteDetallePage (HU 3.2)', () => {
-  it('shows high-risk alert and stats cards', () => {
+  // # Esta prueba es la 2 para la HU 3.2
+  it('shows high-risk alert when incidents exceed threshold', () => {
     render(<ClienteDetallePage />);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/riesgo alto/i)).toBeInTheDocument();
+  });
+
+  // # Esta prueba es la 3 para la HU 3.2
+  it('renders statistics cards and top rented vehicles', () => {
+    render(<ClienteDetallePage />);
+
     expect(screen.getByText(/ltv/i)).toBeInTheDocument();
     expect(screen.getByText(/vehículos más rentados/i)).toBeInTheDocument();
+    expect(screen.getByText(/yamaha mt-03/i)).toBeInTheDocument();
   });
 });

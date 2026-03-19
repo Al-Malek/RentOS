@@ -15,6 +15,7 @@ jest.mock('recharts', () => ({
 }));
 
 describe('RevenueBarChart', () => {
+  // # Esta prueba es la 1 para la HU 4.1
   it('renders chart component with monthly labels', () => {
     render(
       <RevenueBarChart
