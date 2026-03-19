@@ -1,6 +1,11 @@
+version: '3.8'
+
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rentos-app
     ports:
       - "3000:3000"
     volumes:
@@ -9,4 +14,8 @@ services:
       - /app/.next
     environment:
       - NODE_ENV=development
-      - WATCHPACK_POLLING=true 
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    restart: unless-stopped 
