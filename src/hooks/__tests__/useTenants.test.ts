@@ -67,4 +67,17 @@ describe('useTenants', () => {
     expect(validation.allowed).toBe(false);
     expect(validation.reason).toContain('Límite');
   });
+
+  it('blocks vehicle creation for suspended tenants', async () => {
+    const { result } = renderHook(() => useTenants());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    const suspended = result.current.tenants.find((tenant) => tenant.estado === 'suspendido');
+    expect(suspended).toBeTruthy();
+
+    const validation = result.current.canAddVehicleToTenant(suspended!.id);
+    expect(validation.allowed).toBe(false);
+    expect(validation.reason).toContain('suspendido');
+  });
 });

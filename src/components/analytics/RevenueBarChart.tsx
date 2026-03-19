@@ -16,7 +16,14 @@ export const RevenueBarChart: React.FC<RevenueBarChartProps> = ({ data }) => {
         <Tooltip
           contentStyle={{ backgroundColor: '#1E1E1E', border: '1px solid #00E5FF', borderRadius: '8px' }}
           labelStyle={{ color: '#fff' }}
-          formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ingresos']}
+          formatter={(value) => {
+            const rawValue = Array.isArray(value) ? value[0] : value;
+            const numericValue = typeof rawValue === 'number'
+              ? rawValue
+              : Number(rawValue ?? 0);
+
+            return [`$${numericValue.toLocaleString()}`, 'Ingresos'];
+          }}
         />
         <Bar dataKey="ingresos" fill="#00E5FF" radius={[8, 8, 0, 0]} />
       </BarChart>

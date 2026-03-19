@@ -65,7 +65,7 @@ describe('reporteService', () => {
     });
 
     expect(mockSetFontSize).toHaveBeenCalled();
-    expect(mockText).toHaveBeenCalled();
+    expect(mockText).toHaveBeenCalledWith('RentOS - Reporte de Ingresos y Facturacion', 14, 16);
     expect(mockAutoTable).toHaveBeenCalled();
     expect(mockSave).toHaveBeenCalled();
   });

@@ -12,6 +12,7 @@ const buildReserva = (id: string, fechaInicio: string, metodoPago: MetodoPago, t
     dias: 1,
     precioDia: totalFinal,
     totalExtras: 0,
+    deposito: Math.round(totalFinal * 0.2),
   },
   totalFinal,
   estado: 'confirmada',
