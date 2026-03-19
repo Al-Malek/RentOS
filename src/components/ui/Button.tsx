@@ -13,7 +13,7 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props 
 }) => {
-  const baseStyles = 'font-bold rounded-xl transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'font-bold rounded-xl transition-all uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#00E5FF]';
   
   const variants = {
     primary: 'bg-[#00E5FF] text-black hover:bg-cyan-300 shadow-[0_0_15px_rgba(0,229,255,0.4)]',

@@ -6,37 +6,39 @@ import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useReportes } from '@/hooks/useReportes';
 import { MetodoPago } from '@/data/HU3_ReservasData';
-
-const METODO_LABEL: Record<MetodoPago, string> = {
-  efectivo: 'Efectivo',
-  tarjeta_credito: 'Tarjeta credito',
-  tarjeta_debito: 'Tarjeta debito',
-  transferencia: 'Transferencia',
-  billetera: 'Billetera',
-};
+import { useConfig } from '@/context/ConfigContext';
 
 export default function ReportesPage() {
   const { filters, setFilters, rows, summary, exportPDF } = useReportes();
+  const { t } = useConfig();
+
+  const METODO_LABEL: Record<MetodoPago, string> = {
+    efectivo: t('reservas', 'efectivo'),
+    tarjeta_credito: t('reservas', 'tarjetaCredito'),
+    tarjeta_debito: t('reservas', 'tarjetaDebito'),
+    transferencia: t('reservas', 'transferencia'),
+    billetera: t('reservas', 'billetera'),
+  };
 
   return (
     <MainLayout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-black italic uppercase mb-2">Reportes</h1>
-          <p className="text-gray-500">Facturacion exportable para auditoria contable</p>
+          <h1 className="text-3xl font-black italic uppercase mb-2">{t('reportesHu', 'title')}</h1>
+          <p className="text-gray-500">{t('reportesHu', 'subtitle')}</p>
         </div>
 
         <Card>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
-              label="Fecha inicial"
+              label={t('reportesHu', 'fechaInicial')}
               type="date"
               value={filters.fechaInicio}
               onChange={(event) => setFilters((current) => ({ ...current, fechaInicio: event.target.value }))}
             />
 
             <Input
-              label="Fecha final"
+              label={t('reportesHu', 'fechaFinal')}
               type="date"
               value={filters.fechaFin}
               onChange={(event) => setFilters((current) => ({ ...current, fechaFin: event.target.value }))}
@@ -44,7 +46,7 @@ export default function ReportesPage() {
 
             <div>
               <label htmlFor="metodoPagoFiltro" className="block text-[10px] font-bold uppercase text-gray-500 mb-1 tracking-wider">
-                Metodo de pago
+                {t('reportesHu', 'metodoPago')}
               </label>
               <select
                 id="metodoPagoFiltro"
@@ -52,18 +54,18 @@ export default function ReportesPage() {
                 value={filters.metodoPago}
                 onChange={(event) => setFilters((current) => ({ ...current, metodoPago: event.target.value as MetodoPago | 'todos' }))}
               >
-                <option value="todos">Todos</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta_credito">Tarjeta credito</option>
-                <option value="tarjeta_debito">Tarjeta debito</option>
-                <option value="transferencia">Transferencia</option>
-                <option value="billetera">Billetera</option>
+                <option value="todos">{t('reportesHu', 'todos')}</option>
+                <option value="efectivo">{METODO_LABEL.efectivo}</option>
+                <option value="tarjeta_credito">{METODO_LABEL.tarjeta_credito}</option>
+                <option value="tarjeta_debito">{METODO_LABEL.tarjeta_debito}</option>
+                <option value="transferencia">{METODO_LABEL.transferencia}</option>
+                <option value="billetera">{METODO_LABEL.billetera}</option>
               </select>
             </div>
 
             <div className="flex items-end">
-              <Button className="w-full" onClick={() => exportPDF('RentOS Agencia Demo')} aria-label="Exportar reporte a PDF">
-                Exportar PDF
+              <Button className="w-full" onClick={() => exportPDF(t('reportesHu', 'agenciaDemo'))} aria-label={t('reportesHu', 'ariaExportar')}>
+                {t('reportesHu', 'exportarPdf')}
               </Button>
             </div>
           </div>
@@ -71,32 +73,32 @@ export default function ReportesPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Reservas incluidas</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('reportesHu', 'totalReservas')}</p>
             <p className="text-3xl font-black text-white">{summary.reservasIncluidas}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Total facturado</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('reportesHu', 'totalFacturado')}</p>
             <p className="text-3xl font-black text-[#00E5FF]">${summary.totalFacturado.toLocaleString()}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Transacciones</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('reportesHu', 'transacciones')}</p>
             <p className="text-3xl font-black text-white">{summary.cantidadTransacciones}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Subtotal</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('reportesHu', 'subtotal')}</p>
             <p className="text-2xl font-black text-white">${Math.round(summary.subtotal).toLocaleString()}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Impuestos estimados</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('reportesHu', 'impuestos')}</p>
             <p className="text-2xl font-black text-white">${Math.round(summary.impuestos).toLocaleString()}</p>
           </Card>
         </div>
 
         <Card>
-          <h2 className="text-sm font-black uppercase mb-4 text-[#00E5FF]">Resumen por metodo de pago</h2>
+          <h2 className="text-sm font-black uppercase mb-4 text-[#00E5FF]">{t('reportesHu', 'resumenMetodo')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {summary.paymentBreakdown.length === 0 && (
-              <p className="text-sm text-gray-500">No hay transacciones para el filtro seleccionado.</p>
+              <p className="text-sm text-gray-500">{t('reportesHu', 'sinTransacciones')}</p>
             )}
             {summary.paymentBreakdown.map((item) => (
               <div key={item.metodo} className="rounded-lg bg-white/5 p-3 border border-white/10">
@@ -109,15 +111,15 @@ export default function ReportesPage() {
         </Card>
 
         <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl overflow-hidden">
-          <Table caption="Reporte de reservas y facturacion">
+          <Table caption={t('reportesHu', 'tablaCaption')}>
             <TableHeader>
               <TableRow hover={false}>
-                <TableHead>Reserva</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Periodo</TableHead>
-                <TableHead>Metodo de Pago</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Monto</TableHead>
+                <TableHead>{t('reportesHu', 'reserva')}</TableHead>
+                <TableHead>{t('reportesHu', 'cliente')}</TableHead>
+                <TableHead>{t('reportesHu', 'periodo')}</TableHead>
+                <TableHead>{t('reportesHu', 'metodoPagoCol')}</TableHead>
+                <TableHead>{t('reportesHu', 'estado')}</TableHead>
+                <TableHead>{t('reportesHu', 'monto')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -139,7 +141,7 @@ export default function ReportesPage() {
               {!rows.length && (
                 <TableRow>
                   <TableCell className="text-gray-500" colSpan={6}>
-                    No hay resultados para los filtros seleccionados.
+                    {t('reportesHu', 'sinResultados')}
                   </TableCell>
                 </TableRow>
               )}

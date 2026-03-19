@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import toast from 'react-hot-toast';
+import { useConfig } from '@/context/ConfigContext';
 
 const DEFAULT_LIMIT_BY_PLAN: Record<Tenant['plan'], number> = {
   basico: 10,
@@ -40,6 +41,7 @@ const INITIAL_FORM: TenantFormData = {
 };
 
 export default function TenantsPage() {
+  const { t, lang } = useConfig();
   const {
     tenants,
     activeTenantId,
@@ -100,13 +102,13 @@ export default function TenantsPage() {
         ...formData,
         limiteVehiculos: Number(formData.limiteVehiculos),
       });
-      toast.success('Tenant actualizado exitosamente');
+      toast.success(t('tenantsHu', 'successTenantActualizado'));
     } else {
       createTenant({
         ...formData,
         limiteVehiculos: Number(formData.limiteVehiculos),
       });
-      toast.success('Tenant creado exitosamente');
+      toast.success(t('tenantsHu', 'successTenantCreado'));
     }
 
     setMostrarModal(false);
@@ -145,54 +147,54 @@ export default function TenantsPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-3xl font-black italic uppercase">Gestion de Tenants</h1>
-            <p className="text-gray-500">Panel de Super Admin - RentOS</p>
+            <h1 className="text-3xl font-black italic uppercase">{t('tenantsHu', 'title')}</h1>
+            <p className="text-gray-500">{t('tenantsHu', 'subtitle')}</p>
           </div>
-          <Button onClick={openCreate}>+ Nueva Agencia</Button>
+          <Button onClick={openCreate}>{t('tenantsHu', 'nuevaAgencia')}</Button>
         </div>
 
         <Card>
-          <p className="text-xs text-gray-500 uppercase font-bold mb-1">Tenant activo para operacion</p>
+          <p className="text-xs text-gray-500 uppercase font-bold mb-1">{t('tenantsHu', 'tenantActivoTitle')}</p>
           <p className="text-lg font-black text-[#00E5FF]">
-            {selectedTenant ? `${selectedTenant.nombreAgencia} (${selectedTenant.tenantId})` : 'No seleccionado'}
+            {selectedTenant ? `${selectedTenant.nombreAgencia} (${selectedTenant.tenantId})` : t('tenantsHu', 'tenantNoSeleccionado')}
           </p>
-          <p className="text-xs text-gray-500 mt-1">El limite de flota se valida usando este tenant al crear vehiculos.</p>
+          <p className="text-xs text-gray-500 mt-1">{t('tenantsHu', 'tenantActivoDesc')}</p>
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Total Agencias</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('tenantsHu', 'totalAgencias')}</p>
             <p className="text-3xl font-black text-white">{stats.total}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Activas</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('tenantsHu', 'activas')}</p>
             <p className="text-3xl font-black text-green-400">{stats.activos}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">En Prueba</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('tenantsHu', 'enPrueba')}</p>
             <p className="text-3xl font-black text-orange-400">{stats.prueba}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">MRR Total</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('tenantsHu', 'mrrTotal')}</p>
             <p className="text-3xl font-black text-[#00E5FF]">${stats.mrr}</p>
           </Card>
           <Card>
-            <p className="text-xs text-gray-500 uppercase font-bold mb-2">Nuevas Este Mes</p>
+            <p className="text-xs text-gray-500 uppercase font-bold mb-2">{t('tenantsHu', 'nuevasMes')}</p>
             <p className="text-3xl font-black text-white">{stats.nuevosEsteMes}</p>
           </Card>
         </div>
 
         <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl overflow-hidden">
-          <Table caption="Lista de agencias suscritas">
+          <Table caption={t('tenantsHu', 'tablaCaption')}>
             <TableHeader>
               <TableRow hover={false}>
-                <TableHead>Agencia</TableHead>
+                <TableHead>{t('tenantsHu', 'agencia')}</TableHead>
                 <TableHead>Tenant ID</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Flota (Uso / Limite)</TableHead>
-                <TableHead>Suscripcion</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead>{t('tenantsHu', 'plan')}</TableHead>
+                <TableHead>{t('tenantsHu', 'estado')}</TableHead>
+                <TableHead>{t('tenantsHu', 'flotaUso')}</TableHead>
+                <TableHead>{t('tenantsHu', 'suscripcion')}</TableHead>
+                <TableHead>{t('tenantsHu', 'acciones')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -230,12 +232,12 @@ export default function TenantsPage() {
                   </TableCell>
                   <TableCell>
                     <p className="text-sm font-black text-[#00E5FF]">
-                      {tenant.vehiculosRegistrados} / {tenant.limiteVehiculos >= 9999 ? 'Ilimitado' : tenant.limiteVehiculos}
+                      {tenant.vehiculosRegistrados} / {tenant.limiteVehiculos >= 9999 ? t('tenantsHu', 'ilimitado') : tenant.limiteVehiculos}
                     </p>
                   </TableCell>
                   <TableCell>
                     <p className="text-sm">
-                      {new Date(tenant.fechaSuscripcion).toLocaleDateString('es-CO', {
+                      {new Date(tenant.fechaSuscripcion).toLocaleDateString(lang === 'en' ? 'en-US' : 'es-CO', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
@@ -247,26 +249,27 @@ export default function TenantsPage() {
                       <Button
                         size="sm"
                         variant={tenant.estado === 'suspendido' ? 'secondary' : 'danger'}
+                        aria-label={`${tenant.estado === 'suspendido' ? t('tenantsHu', 'activar') : t('tenantsHu', 'suspender')} ${tenant.nombreAgencia}`}
                         onClick={() => {
                           toggleTenantStatus(tenant.id);
-                          toast.success(tenant.estado === 'suspendido' ? 'Tenant activado' : 'Tenant suspendido');
+                          toast.success(tenant.estado === 'suspendido' ? t('tenantsHu', 'successTenantActivado') : t('tenantsHu', 'successTenantSuspendido'));
                         }}
                       >
-                        {tenant.estado === 'suspendido' ? 'Activar' : 'Suspender'}
+                        {tenant.estado === 'suspendido' ? t('tenantsHu', 'activar') : t('tenantsHu', 'suspender')}
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => openEdit(tenant)}>
-                        Editar
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(tenant)} aria-label={`${t('tenantsHu', 'editar')} ${tenant.nombreAgencia}`}>
+                        {t('tenantsHu', 'editar')}
                       </Button>
                       <Button
                         size="sm"
                         variant={tenant.id === activeTenantId ? 'primary' : 'secondary'}
                         onClick={() => {
                           setActiveTenant(tenant.id);
-                          toast.success(`${tenant.nombreAgencia} seleccionado`);
+                          toast.success(`${tenant.nombreAgencia} ${t('tenantsHu', 'successTenantSeleccionado')}`);
                         }}
                         aria-label={`Seleccionar tenant ${tenant.nombreAgencia}`}
                       >
-                        {tenant.id === activeTenantId ? 'Activo' : 'Seleccionar'}
+                        {tenant.id === activeTenantId ? t('tenantsHu', 'activo') : t('tenantsHu', 'seleccionar')}
                       </Button>
                     </div>
                   </TableCell>
@@ -283,19 +286,19 @@ export default function TenantsPage() {
             setEditingTenantId(null);
             setFormData(INITIAL_FORM);
           }}
-          title={editingTenantId ? 'Editar Agencia' : 'Nueva Agencia'}
+          title={editingTenantId ? t('tenantsHu', 'modalEditar') : t('tenantsHu', 'modalNueva')}
           size="lg"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Nombre de la Agencia"
+                label={t('tenantsHu', 'nombreAgencia')}
                 value={formData.nombreAgencia}
                 onChange={(event) => setFormData({ ...formData, nombreAgencia: event.target.value })}
                 required
               />
               <Input
-                label="Email del Administrador"
+                label={t('tenantsHu', 'emailAdmin')}
                 type="email"
                 value={formData.emailAdmin}
                 onChange={(event) => setFormData({ ...formData, emailAdmin: event.target.value })}
@@ -305,7 +308,7 @@ export default function TenantsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label htmlFor="tenant-plan" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Plan</label>
+                <label htmlFor="tenant-plan" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('tenantsHu', 'plan')}</label>
                 <select
                   id="tenant-plan"
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
@@ -319,7 +322,7 @@ export default function TenantsPage() {
               </div>
 
               <div>
-                <label htmlFor="tenant-status" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Estado</label>
+                <label htmlFor="tenant-status" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('tenantsHu', 'estado')}</label>
                 <select
                   id="tenant-status"
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
@@ -333,13 +336,13 @@ export default function TenantsPage() {
               </div>
 
               <Input
-                label="Pais"
+                label={t('tenantsHu', 'pais')}
                 value={formData.pais}
                 onChange={(event) => setFormData({ ...formData, pais: event.target.value })}
                 required
               />
               <Input
-                label="Ciudad"
+                label={t('tenantsHu', 'ciudad')}
                 value={formData.ciudad}
                 onChange={(event) => setFormData({ ...formData, ciudad: event.target.value })}
                 required
@@ -348,7 +351,7 @@ export default function TenantsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Limite maximo de vehiculos"
+                label={t('tenantsHu', 'limite')}
                 type="number"
                 value={String(formData.limiteVehiculos)}
                 onChange={(event) => setFormData({ ...formData, limiteVehiculos: Number(event.target.value) })}
@@ -356,7 +359,7 @@ export default function TenantsPage() {
                 required
               />
               <Input
-                label="Fecha de suscripcion"
+                label={t('tenantsHu', 'fechaSuscripcion')}
                 type="date"
                 value={formData.fechaSuscripcion}
                 onChange={(event) => setFormData({ ...formData, fechaSuscripcion: event.target.value })}
@@ -375,10 +378,10 @@ export default function TenantsPage() {
                 }}
                 className="flex-1"
               >
-                Cancelar
+                {t('tenantsHu', 'cancelar')}
               </Button>
               <Button type="submit" className="flex-1">
-                {editingTenantId ? 'Guardar Cambios' : 'Crear Tenant'}
+                {editingTenantId ? t('tenantsHu', 'guardarCambios') : t('tenantsHu', 'crearTenant')}
               </Button>
             </div>
           </form>

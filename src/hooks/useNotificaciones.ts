@@ -8,6 +8,7 @@ import {
 } from '@/data/NotificacionesData';
 import toast from 'react-hot-toast';
 import { applyTemplateString, calculateReminderSendAt, shouldTrigger24hReminder } from '@/hooks/notificaciones.utils';
+import { useConfig } from '@/context/ConfigContext';
 
 const STORAGE_NOTIFICACIONES = 'rentos_notificaciones';
 const STORAGE_PLANTILLAS = 'rentos_notificacion_templates';
@@ -23,7 +24,26 @@ interface ReminderScheduleInput {
   fechaInicio: string;
 }
 
+const fallbackNotificacionesCopy: Record<string, string> = {
+  emailEnviado: 'Email enviado a',
+  asuntoConfirmacionDefault: 'Confirmación de Reserva #',
+  mensajeConfirmacionDefault: 'Tu reserva ha sido confirmada para el vehículo',
+  asuntoCancelacionDefault: 'Cancelación de Reserva #',
+  mensajeCancelacionDefault: 'Tu reserva ha sido cancelada según tu solicitud. El reembolso se procesará en 3-5 días hábiles.',
+  asuntoReciboDefault: 'Recibo de Pago - Reserva #',
+  mensajeReciboDefault: 'Gracias por tu preferencia. El monto total de',
+  mensajeReciboProcesado: 'ha sido procesado exitosamente.',
+};
+
 export const useNotificaciones = () => {
+  const config = useConfig();
+  const i18n = (key: string) => {
+    if (config?.t) {
+      return config.t('notificacionesHu', key);
+    }
+
+    return fallbackNotificacionesCopy[key] ?? key;
+  };
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [templates, setTemplates] = useState<PlantillaNotificacion[]>([]);
   const [programadas, setProgramadas] = useState<NotificacionProgramada[]>([]);
@@ -86,7 +106,7 @@ export const useNotificaciones = () => {
 
   const enviarNotificacion = (notificacion: NotificacionInput): Promise<Notificacion> => {
     return Promise.resolve(registrarNotificacion(notificacion, 'enviado')).then((created) => {
-      toast.success(`Email enviado a ${notificacion.email}`);
+      toast.success(`${i18n('emailEnviado')} ${notificacion.email}`);
       return created;
     });
   };
@@ -184,8 +204,8 @@ export const useNotificaciones = () => {
       tipo: 'confirmacion',
       destinatario: cliente,
       email,
-      asunto: content.asunto || `Confirmación de Reserva #${reservaId}`,
-      mensaje: content.mensaje || `Tu reserva ha sido confirmada para el vehículo ${vehiculo} ${fechas}.`,
+      asunto: content.asunto || `${i18n('asuntoConfirmacionDefault')}${reservaId}`,
+      mensaje: content.mensaje || `${i18n('mensajeConfirmacionDefault')} ${vehiculo} ${fechas}.`,
       reservaId
     });
   };
@@ -195,8 +215,8 @@ export const useNotificaciones = () => {
       tipo: 'cancelacion',
       destinatario: cliente,
       email,
-      asunto: `Cancelación de Reserva #${reservaId}`,
-      mensaje: 'Tu reserva ha sido cancelada según tu solicitud. El reembolso se procesará en 3-5 días hábiles.',
+      asunto: `${i18n('asuntoCancelacionDefault')}${reservaId}`,
+      mensaje: i18n('mensajeCancelacionDefault'),
       reservaId
     });
   };
@@ -206,8 +226,8 @@ export const useNotificaciones = () => {
       tipo: 'recibo',
       destinatario: cliente,
       email,
-      asunto: `Recibo de Pago - Reserva #${reservaId}`,
-      mensaje: `Gracias por tu preferencia. El monto total de $${monto} ha sido procesado exitosamente.`,
+      asunto: `${i18n('asuntoReciboDefault')}${reservaId}`,
+      mensaje: `${i18n('mensajeReciboDefault')} $${monto} ${i18n('mensajeReciboProcesado')}`,
       reservaId
     });
   };

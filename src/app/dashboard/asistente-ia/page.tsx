@@ -3,6 +3,7 @@ import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { useConfig } from '@/context/ConfigContext';
 
 interface Mensaje {
   id: string;
@@ -12,26 +13,36 @@ interface Mensaje {
 }
 
 export default function AsistenteIAPage() {
+  const { t, lang } = useConfig();
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const respuestasMock: Record<string, string> = {
-    'comprar': 'Basándome en el análisis de tu flota actual, te recomiendo adquirir motos de tipo Adventure o Naked, ya que tienen la mayor tasa de ocupación (85%). Considera modelos como la BMW G310 GS o Yamaha MT-03, que son populares entre tus clientes y tienen bajo costo de mantenimiento.',
-    'adquirir': 'Para expandir tu flota, sugiero enfocarte en vehículos de gama media (precio $45-60/día). Estos tienen el mejor balance entre demanda y rentabilidad según tus datos históricos.',
-    'mantenimiento': 'Según el kilometraje promedio de tu flota (12,500 km), recomiendo programar mantenimientos preventivos cada 2,500 km. Actualmente tienes 2 vehículos cerca del límite que deberían ingresar a taller en los próximos 7 días.',
-    'precio': 'Analizando tu ocupación actual del 65%, sugiero incrementar precios en un 15% durante fines de semana y mantener descuentos del 10% para alquileres de +7 días. Esto podría aumentar tus ingresos mensuales en aproximadamente $2,400.',
-    'tarifa': 'Tu estrategia de tarifas actual es sólida. Sin embargo, podrías implementar precios dinámicos para temporada alta (Diciembre-Enero y Semana Santa) con incrementos del 25-30%. Esto es común en el mercado colombiano.',
-    'default': 'He analizado los datos de tu negocio. Tu flota tiene una tasa de ocupación del 65%, con ingresos promedio de $8,500/mes. Los vehículos tipo Naked son los más rentables. ¿Te gustaría que profundice en algún aspecto específico como expansión, mantenimiento o estrategia de precios?'
+  const respuestasMock = {
+    comprar: t('assistantIA', 'respComprar'),
+    adquirir: t('assistantIA', 'respAdquirir'),
+    mantenimiento: t('assistantIA', 'respMantenimiento'),
+    precio: t('assistantIA', 'respPrecio'),
+    tarifa: t('assistantIA', 'respTarifa'),
+    default: t('assistantIA', 'respDefault'),
   };
 
   const obtenerRespuesta = (pregunta: string): string => {
     const preguntaLower = pregunta.toLowerCase();
-    for (const [keyword, respuesta] of Object.entries(respuestasMock)) {
-      if (preguntaLower.includes(keyword)) {
-        return respuesta;
+    const reglas = [
+      { keys: lang === 'en' ? ['buy', 'purchase'] : ['comprar'], value: respuestasMock.comprar },
+      { keys: lang === 'en' ? ['acquire', 'expand'] : ['adquirir'], value: respuestasMock.adquirir },
+      { keys: ['mantenimiento', 'maintenance'], value: respuestasMock.mantenimiento },
+      { keys: ['precio', 'price', 'pricing'], value: respuestasMock.precio },
+      { keys: ['tarifa', 'rate', 'rates'], value: respuestasMock.tarifa },
+    ];
+
+    for (const regla of reglas) {
+      if (regla.keys.some((keyword) => preguntaLower.includes(keyword))) {
+        return regla.value;
       }
     }
+
     return respuestasMock.default;
   };
 
@@ -68,10 +79,10 @@ export default function AsistenteIAPage() {
     <MainLayout>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-black italic uppercase mb-2">🤖 Asistente IA de Flota</h1>
-          <p className="text-gray-500">Recomendaciones inteligentes para tu negocio</p>
+          <h1 className="text-3xl font-black italic uppercase mb-2">🤖 {t('assistantIA', 'title')}</h1>
+          <p className="text-gray-500">{t('assistantIA', 'subtitle')}</p>
           <div className="mt-4 inline-block bg-orange-500/10 border border-orange-500/30 rounded-lg px-4 py-2">
-            <p className="text-xs text-orange-400 font-bold">⚠️ Modo Demo — IA conectada en Ciclo 2</p>
+            <p className="text-xs text-orange-400 font-bold">⚠️ {t('assistantIA', 'demoMode')}</p>
           </div>
         </div>
 
@@ -79,10 +90,10 @@ export default function AsistenteIAPage() {
         {mensajes.length === 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              '¿Qué moto debería comprar?',
-              '¿Cuándo hacer mantenimiento?',
-              'Analiza mis precios',
-              'Estrategia de tarifas'
+              t('assistantIA', 'quickBuy'),
+              t('assistantIA', 'quickMaint'),
+              t('assistantIA', 'quickPrices'),
+              t('assistantIA', 'quickRates'),
             ].map((sugerencia, i) => (
               <button
                 key={i}
@@ -100,8 +111,8 @@ export default function AsistenteIAPage() {
           {mensajes.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-600">
               <p className="text-center">
-                👋 ¡Hola! Soy tu asistente de IA.<br/>
-                Pregúntame sobre tu flota, mantenimiento o estrategias de precios.
+                👋 {t('assistantIA', 'emptyHello')}<br/>
+                {t('assistantIA', 'emptyHint')}
               </p>
             </div>
           ) : (
@@ -119,7 +130,7 @@ export default function AsistenteIAPage() {
                 >
                   <p className="text-sm leading-relaxed">{mensaje.contenido}</p>
                   <p className="text-[9px] mt-2 opacity-50">
-                    {mensaje.timestamp.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
+                    {mensaje.timestamp.toLocaleTimeString(lang === 'en' ? 'en-US' : 'es-CO', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
@@ -146,12 +157,12 @@ export default function AsistenteIAPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && enviarMensaje()}
-            placeholder="Escribe tu pregunta aquí..."
+            placeholder={t('assistantIA', 'placeholder')}
             className="flex-1 bg-[#1A1A24] border border-gray-700 rounded-xl p-4 text-sm text-white focus:border-[#00E5FF] focus:outline-none"
             disabled={loading}
           />
           <Button onClick={enviarMensaje} disabled={loading || !input.trim()}>
-            Enviar
+            {t('assistantIA', 'send')}
           </Button>
         </div>
       </div>

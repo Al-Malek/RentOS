@@ -21,7 +21,7 @@ export default function Page() {
     let nuevaLista;
     if (vehiculo.id === 0) {
       if (!activeTenant) {
-        toast.error('Selecciona un tenant activo desde Super Admin antes de agregar vehículos.');
+        toast.error(t('vehiculosHu', 'errorSeleccionTenant'));
         return;
       }
 
@@ -73,7 +73,7 @@ export default function Page() {
           <p className={textSecondary}>{t('home', 'subtitle')}</p>
           {activeTenant && (
             <p className="text-xs mt-2 text-[#00E5FF] font-bold uppercase tracking-wider">
-              Tenant activo: {activeTenant.nombreAgencia} · Flota: {activeTenant.vehiculosRegistrados}/{activeTenant.limiteVehiculos >= 9999 ? 'Ilimitado' : activeTenant.limiteVehiculos}
+              {t('vehiculosHu', 'tenantActivoPrefix')}: {activeTenant.nombreAgencia} · {t('vehiculosHu', 'flota')}: {activeTenant.vehiculosRegistrados}/{activeTenant.limiteVehiculos >= 9999 ? t('vehiculosHu', 'ilimitado') : activeTenant.limiteVehiculos}
             </p>
           )}
         </div>
@@ -82,7 +82,7 @@ export default function Page() {
           onClick={abrirCreacion}
           className="bg-[#00E5FF] hover:bg-cyan-300 text-black font-black px-6 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(0,229,255,0.3)] active:scale-95 flex items-center gap-2 uppercase text-xs tracking-widest"
         >
-          <span className="text-xl">+</span> Añadir Vehículo
+          <span className="text-xl">+</span> {t('vehiculosHu', 'addVehiculo')}
         </button>
       </div>
 
@@ -103,17 +103,17 @@ export default function Page() {
                   <h2 className="text-5xl font-black italic uppercase tracking-tighter leading-none">{vehiculoDetalle.modelo}</h2>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1">Costo de Renta</p>
+                  <p className="text-[10px] uppercase text-gray-500 font-bold tracking-widest mb-1">{t('vehiculosHu', 'costoRenta')}</p>
                   <p className="text-4xl font-bold text-[#00E5FF]">${vehiculoDetalle.precioDia}<span className="text-sm text-gray-500 font-normal">/día</span></p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
-                  { label: 'Placa', value: vehiculoDetalle.placa, icon: '🆔' },
-                  { label: 'Recorrido', value: `${vehiculoDetalle.kilometraje.toLocaleString()} km`, icon: '📍' },
-                  { label: 'Año', value: vehiculoDetalle.anio, icon: '📅' },
-                  { label: 'Tipo', value: vehiculoDetalle.tipo, icon: '🏍️' }
+                  { label: t('vehiculosHu', 'placa'), value: vehiculoDetalle.placa, icon: '🆔' },
+                  { label: t('vehiculosHu', 'recorrido'), value: `${vehiculoDetalle.kilometraje.toLocaleString()} km`, icon: '📍' },
+                  { label: t('vehiculosHu', 'anio'), value: vehiculoDetalle.anio, icon: '📅' },
+                  { label: t('vehiculosHu', 'tipo'), value: vehiculoDetalle.tipo, icon: '🏍️' }
                 ].map((spec, idx) => (
                   <div key={idx} className={`${highContrast ? 'bg-gray-100 border-gray-300' : 'bg-white/5 border-white/10'} p-4 rounded-2xl border`}>
                     <p className="text-[10px] uppercase text-gray-500 font-black mb-1">{spec.label}</p>
@@ -127,10 +127,10 @@ export default function Page() {
                   onClick={() => { setVehiculoDetalle(null); setVehiculoAEditar(vehiculoDetalle); setMostrarFormulario(true); }}
                   className="flex-1 bg-white/5 hover:bg-white/10 py-4 rounded-2xl font-bold transition-all border border-white/10 active:scale-95"
                 >
-                  Editar Ficha Técnica
+                  {t('vehiculosHu', 'editarFicha')}
                 </button>
                 <button onClick={() => setVehiculoDetalle(null)} className="flex-1 bg-[#00E5FF] hover:bg-cyan-300 text-black py-4 rounded-2xl font-extrabold transition-all shadow-[0_10px_20px_rgba(0,229,255,0.2)] active:scale-95">
-                  Cerrar
+                  {t('vehiculosHu', 'cerrar')}
                 </button>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function Page() {
               
               <div className={`text-sm mb-4 space-y-2 ${textSecondary}`}>
                 <p><span className="font-medium">{t('card', 'km')}:</span> {moto.kilometraje.toLocaleString()} km</p>
-                <p>🔧 <span className="font-medium">Mantenimiento:</span> en {moto.proximoMantenimiento} km</p>             
+                <p>🔧 <span className="font-medium">{t('vehiculosHu', 'mantenimiento')}:</span> en {moto.proximoMantenimiento} km</p>             
               </div>
 
               <div className="flex gap-2 mt-auto">

@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { ClienteInput } from '@/hooks/clientes.utils';
+import { useConfig } from '@/context/ConfigContext';
 
 export default function ClientesPage() {
   const { clientes, crearCliente, actualizarCliente, eliminarCliente, buscarClientes } = useClientes();
+  const { t } = useConfig();
   const [busqueda, setBusqueda] = useState('');
   const [mostrarModal, setMostrarModal] = useState(false);
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
@@ -36,7 +38,7 @@ export default function ClientesPage() {
     try {
       if (clienteEditar) {
         actualizarCliente(clienteEditar.id, formData);
-        toast.success('Cliente actualizado exitosamente');
+        toast.success(t('clientesHu', 'successActualizado'));
       } else {
         const payload: ClienteInput = {
           nombre: formData.nombre ?? '',
@@ -54,12 +56,12 @@ export default function ClientesPage() {
           avatar: formData.avatar,
         };
         crearCliente(payload);
-        toast.success('Cliente creado exitosamente');
+        toast.success(t('clientesHu', 'successCreado'));
       }
       setMostrarModal(false);
       resetForm();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudo guardar el cliente';
+      const message = error instanceof Error ? error.message : t('clientesHu', 'errorGuardar');
       toast.error(message);
     }
   };
@@ -86,10 +88,10 @@ export default function ClientesPage() {
   };
 
   const getClasificacion = (cliente: Cliente) => {
-    if (cliente.reservasTotales > 5) return { label: 'FRECUENTE', variant: 'success' as const };
-    if (cliente.score < 40) return { label: 'RIESGO', variant: 'danger' as const };
-    if (cliente.reservasTotales <= 2) return { label: 'NUEVO', variant: 'info' as const };
-    return { label: 'REGULAR', variant: 'default' as const };
+    if (cliente.reservasTotales > 5) return { label: t('clientesHu', 'frecuente'), variant: 'success' as const };
+    if (cliente.score < 40) return { label: t('clientesHu', 'riesgo'), variant: 'danger' as const };
+    if (cliente.reservasTotales <= 2) return { label: t('clientesHu', 'nuevoLabel'), variant: 'info' as const };
+    return { label: t('clientesHu', 'regular'), variant: 'default' as const };
   };
 
   return (
@@ -97,18 +99,20 @@ export default function ClientesPage() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-black italic uppercase">👥 Base de Datos de Clientes</h1>
-            <p className="text-gray-500">Gestión de información y perfiles</p>
+            <h1 className="text-3xl font-black italic uppercase">👥 {t('clientesHu', 'title')}</h1>
+            <p className="text-gray-500">{t('clientesHu', 'subtitle')}</p>
           </div>
           <Button onClick={() => { resetForm(); setMostrarModal(true); }}>
-            + Nuevo Cliente
+            {t('clientesHu', 'nuevo')}
           </Button>
         </div>
 
         {/* Búsqueda */}
         <div className="flex gap-4">
           <Input
-            placeholder="Buscar por nombre, documento, teléfono o email..."
+            id="clientes-busqueda"
+            aria-label="Buscar clientes"
+            placeholder={t('clientesHu', 'buscarPlaceholder')}
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="flex-1"
@@ -117,16 +121,16 @@ export default function ClientesPage() {
 
         {/* Tabla */}
         <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl overflow-hidden">
-          <Table caption="Lista de clientes registrados">
+          <Table caption={t('clientesHu', 'tablaCaption')}>
             <TableHeader>
               <TableRow hover={false}>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Documento</TableHead>
-                <TableHead>Contacto</TableHead>
-                <TableHead>Reservas</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Clasificación</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead>{t('clientesHu', 'cliente')}</TableHead>
+                <TableHead>{t('clientesHu', 'documento')}</TableHead>
+                <TableHead>{t('clientesHu', 'contacto')}</TableHead>
+                <TableHead>{t('clientesHu', 'reservas')}</TableHead>
+                <TableHead>{t('clientesHu', 'score')}</TableHead>
+                <TableHead>{t('clientesHu', 'clasificacion')}</TableHead>
+                <TableHead>{t('clientesHu', 'acciones')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,10 +179,10 @@ export default function ClientesPage() {
                     <TableCell>
                       <div className="flex gap-2">
                         <Link href={`/dashboard/clientes/${cliente.id}`}>
-                          <Button size="sm" variant="ghost">Ver</Button>
+                          <Button size="sm" variant="ghost" aria-label={`${t('clientesHu', 'ver')} ${cliente.nombre}`}>{t('clientesHu', 'ver')}</Button>
                         </Link>
-                        <Button size="sm" variant="secondary" onClick={() => abrirEdicion(cliente)}>
-                          Editar
+                        <Button size="sm" variant="secondary" onClick={() => abrirEdicion(cliente)} aria-label={`${t('clientesHu', 'editar')} ${cliente.nombre}`}>
+                          {t('clientesHu', 'editar')}
                         </Button>
                       </div>
                     </TableCell>
@@ -193,19 +197,19 @@ export default function ClientesPage() {
         <Modal 
           isOpen={mostrarModal} 
           onClose={() => { setMostrarModal(false); resetForm(); }}
-          title={clienteEditar ? '✏️ Editar Cliente' : '➕ Nuevo Cliente'}
+          title={clienteEditar ? `✏️ ${t('clientesHu', 'modalEditar')}` : `➕ ${t('clientesHu', 'modalNuevo')}`}
           size="lg"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Nombre Completo"
+                label={t('clientesHu', 'nombreCompleto')}
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                 required
               />
               <Input
-                label="Email"
+                label={t('clientesHu', 'email')}
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -215,7 +219,7 @@ export default function ClientesPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Tipo Documento</label>
+                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'tipoDocumento')}</label>
                 <select
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
                   value={formData.tipoDocumento}
@@ -227,7 +231,7 @@ export default function ClientesPage() {
                 </select>
               </div>
               <Input
-                label="Número Documento"
+                label={t('clientesHu', 'numeroDocumento')}
                 value={formData.numeroDocumento}
                 onChange={(e) => setFormData({ ...formData, numeroDocumento: e.target.value })}
                 required
@@ -237,13 +241,13 @@ export default function ClientesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="Teléfono"
+                label={t('clientesHu', 'telefono')}
                 value={formData.telefono}
                 onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
                 required
               />
               <Input
-                label="Fecha de Nacimiento"
+                label={t('clientesHu', 'fechaNacimiento')}
                 type="date"
                 value={formData.fechaNacimiento}
                 onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
@@ -252,7 +256,7 @@ export default function ClientesPage() {
             </div>
 
             <Input
-              label="Dirección"
+              label={t('clientesHu', 'direccion')}
               value={formData.direccion}
               onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
               required
@@ -260,13 +264,13 @@ export default function ClientesPage() {
 
             <div className="grid grid-cols-3 gap-4">
               <Input
-                label="Licencia Número"
+                label={t('clientesHu', 'licenciaNumero')}
                 value={formData.licencia?.numero}
                 onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, numero: e.target.value } })}
                 required
               />
               <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Categoría</label>
+                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('clientesHu', 'categoria')}</label>
                 <select
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
                   value={formData.licencia?.categoria}
@@ -278,7 +282,7 @@ export default function ClientesPage() {
                 </select>
               </div>
               <Input
-                label="Vencimiento"
+                label={t('clientesHu', 'vencimiento')}
                 type="date"
                 value={formData.licencia?.fechaVencimiento}
                 onChange={(e) => setFormData({ ...formData, licencia: { ...formData.licencia!, fechaVencimiento: e.target.value } })}
@@ -288,10 +292,10 @@ export default function ClientesPage() {
 
             <div className="flex gap-3 pt-4">
               <Button type="button" variant="ghost" onClick={() => { setMostrarModal(false); resetForm(); }} className="flex-1">
-                Cancelar
+                {t('clientesHu', 'cancelar')}
               </Button>
               <Button type="submit" className="flex-1">
-                {clienteEditar ? 'Actualizar' : 'Crear'} Cliente
+                {clienteEditar ? t('clientesHu', 'actualizar') : t('clientesHu', 'crear')} {t('clientesHu', 'cliente')}
               </Button>
             </div>
           </form>
