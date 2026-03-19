@@ -1,16 +1,12 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  // Configuración para Docker
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Configuracion para Docker
   output: 'standalone',
-  
-  // Deshabilitar telemetría en producción
+
+  // Deshabilitar telemetria en produccion
   productionBrowserSourceMaps: false,
-  
-  // Optimizaciones
-  swcMinify: true,
-  
-  // Configuración de imágenes
+
+  // Configuracion de imagenes
   images: {
     remotePatterns: [
       {
