@@ -5,6 +5,15 @@ export interface TarifaExtra {
   esPorDia: boolean; 
 }
 
+export type MetodoPago = 'efectivo' | 'tarjeta_credito' | 'tarjeta_debito' | 'transferencia' | 'billetera';
+
+export interface PagoReserva {
+  metodoPago: MetodoPago;
+  estado: 'pendiente' | 'procesado' | 'fallido' | 'reembolsado';
+  fechaOperacion: string;
+  referencia?: string;
+}
+
 export interface Reserva {
   id: string;
   vehiculoId: number;
@@ -19,6 +28,7 @@ export interface Reserva {
   };
   totalFinal: number;
   estado: 'confirmada' | 'finalizada' | 'cancelada';
+  pago: PagoReserva;
 }
 
 export const TarifasIniciales: TarifaExtra[] = [
@@ -36,6 +46,12 @@ export const ReservasMock: Reserva[] = [
     fechaFin: '2026-03-15',
     desglose: { dias: 5, precioDia: 50, totalExtras: 50 },
     totalFinal: 300,
-    estado: 'confirmada'
+    estado: 'confirmada',
+    pago: {
+      metodoPago: 'tarjeta_credito',
+      estado: 'procesado',
+      fechaOperacion: '2026-03-10',
+      referencia: 'TXN-RES-001'
+    }
   }
 ];

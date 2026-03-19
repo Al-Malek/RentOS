@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Reserva } from '@/data/HU3_ReservasData';
+import { PagoReserva, Reserva } from '@/data/HU3_ReservasData';
 
 export const useReservas = () => {
   const [reservas, setReservas] = useState<Reserva[]>([]);
@@ -10,7 +10,18 @@ export const useReservas = () => {
     const saved = localStorage.getItem('reservas_db');
     if (saved) {
       try {
-        setReservas(JSON.parse(saved));
+        const parsed = JSON.parse(saved) as Array<Reserva & { pago?: PagoReserva }>;
+        setReservas(
+          parsed.map((reserva) => ({
+            ...reserva,
+            pago: reserva.pago ?? {
+              metodoPago: 'efectivo',
+              estado: 'procesado',
+              fechaOperacion: reserva.fechaInicio,
+              referencia: `TXN-${reserva.id}`,
+            },
+          })),
+        );
       } catch (e) {
         setError('Error al cargar reservas');
       }
@@ -23,10 +34,16 @@ export const useReservas = () => {
     localStorage.setItem('reservas_db', JSON.stringify(nuevasReservas));
   };
 
-  const crearReserva = (reserva: Omit<Reserva, 'id'>) => {
+  const crearReserva = (reserva: Omit<Reserva, 'id' | 'pago'> & { pago?: PagoReserva }) => {
     const nuevaReserva: Reserva = {
       ...reserva,
-      id: `res-${Date.now()}`
+      id: `res-${Date.now()}`,
+      pago: reserva.pago ?? {
+        metodoPago: 'efectivo',
+        estado: 'procesado',
+        fechaOperacion: reserva.fechaInicio,
+        referencia: `TXN-${Date.now()}`
+      }
     };
     saveToStorage([...reservas, nuevaReserva]);
     return nuevaReserva;

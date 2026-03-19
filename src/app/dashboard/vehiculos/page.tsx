@@ -2,12 +2,15 @@
 import { useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
+import { useTenants } from '@/hooks/useTenants';
 import { useConfig } from '@/context/ConfigContext'; 
 import { HU1_VehiculoForm } from '@/components/HU1_VehiculoForm';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
+import toast from 'react-hot-toast';
 
 export default function Page() {
   const { vehiculos, setVehiculos } = useVehiculos();
+  const { activeTenant, canAddVehicleToTenant, incrementVehicleCount, decrementVehicleCount } = useTenants();
   const { t, highContrast } = useConfig(); 
 
   const [vehiculoAEditar, setVehiculoAEditar] = useState<Vehiculo | null>(null);
@@ -17,7 +20,19 @@ export default function Page() {
   const guardarCambios = (vehiculo: Vehiculo) => {
     let nuevaLista;
     if (vehiculo.id === 0) {
+      if (!activeTenant) {
+        toast.error('Selecciona un tenant activo desde Super Admin antes de agregar vehículos.');
+        return;
+      }
+
+      const validation = canAddVehicleToTenant(activeTenant.id);
+      if (!validation.allowed) {
+        toast.error(`${validation.reason}. Límite: ${activeTenant.limiteVehiculos}.`);
+        return;
+      }
+
       nuevaLista = [{ ...vehiculo, id: Date.now() }, ...vehiculos];
+      incrementVehicleCount(activeTenant.id);
     } else {
       nuevaLista = vehiculos.map(v => v.id === vehiculo.id ? vehiculo : v);
     }
@@ -29,6 +44,9 @@ export default function Page() {
   const eliminarVehiculo = (id: number) => {
     const nuevaLista = vehiculos.filter(v => v.id !== id);
     setVehiculos(nuevaLista);
+    if (activeTenant) {
+      decrementVehicleCount(activeTenant.id);
+    }
     setMostrarFormulario(false);
     setVehiculoAEditar(null);
     setVehiculoDetalle(null);
@@ -53,6 +71,11 @@ export default function Page() {
             {t('home', 'title')}
           </h2>
           <p className={textSecondary}>{t('home', 'subtitle')}</p>
+          {activeTenant && (
+            <p className="text-xs mt-2 text-[#00E5FF] font-bold uppercase tracking-wider">
+              Tenant activo: {activeTenant.nombreAgencia} · Flota: {activeTenant.vehiculosRegistrados}/{activeTenant.limiteVehiculos >= 9999 ? 'Ilimitado' : activeTenant.limiteVehiculos}
+            </p>
+          )}
         </div>
         
         <button 

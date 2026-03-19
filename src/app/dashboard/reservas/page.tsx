@@ -4,7 +4,7 @@ import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
 import { useConfig } from '@/context/ConfigContext';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
-import { Reserva, TarifaExtra, TarifasIniciales } from '@/data/HU3_ReservasData';
+import { MetodoPago, Reserva, TarifaExtra, TarifasIniciales } from '@/data/HU3_ReservasData';
 
 export default function ReservasPage() {
   const { vehiculos, setVehiculos } = useVehiculos(); 
@@ -20,6 +20,7 @@ export default function ReservasPage() {
   
   const [motoSeleccionada, setMotoSeleccionada] = useState<Vehiculo | null>(null);
   const [cliente, setCliente] = useState({ nombre: '', documento: '' });
+  const [metodoPago, setMetodoPago] = useState<MetodoPago>('efectivo');
   const [nuevaTarifa, setNuevaTarifa] = useState({ nombre: '', precio: 0, esPorDia: true });
 
   useEffect(() => {
@@ -37,14 +38,8 @@ export default function ReservasPage() {
     const inicioSolicitud = new Date(fechas.inicio).getTime();
     const finSolicitud = new Date(fechas.fin).getTime();
 
-    const motoData = moto as any; 
-    if (moto.estado === 'maintenance' && motoData.periodoMantenimiento) {
-      const inicioMant = new Date(motoData.periodoMantenimiento.inicio).getTime();
-      const finMant = new Date(motoData.periodoMantenimiento.fin).getTime();
-
-      if (inicioSolicitud <= finMant && finSolicitud >= inicioMant) {
-        return false; 
-      }
+    if (moto.estado === 'maintenance') {
+      return false;
     }
 
     const tieneConflicto = reservas.some(res => {
@@ -105,7 +100,13 @@ export default function ReservasPage() {
         totalExtras: desglose.totalExtras
       },
       totalFinal: desglose.granTotal,
-      estado: 'confirmada'
+      estado: 'confirmada',
+      pago: {
+        metodoPago,
+        estado: 'procesado',
+        fechaOperacion: fechas.inicio,
+        referencia: `TXN-${Date.now()}`,
+      }
     };
 
     setReservas([...reservas, nuevaReserva]);
@@ -120,6 +121,7 @@ export default function ReservasPage() {
 
     setMotoSeleccionada(null);
     setCliente({ nombre: '', documento: '' });
+    setMetodoPago('efectivo');
   };
 
   const themeCard = highContrast ? 'bg-white border-gray-300 text-black' : 'bg-[#1E1E1E] border-gray-800 text-white';
@@ -289,6 +291,22 @@ export default function ReservasPage() {
                   <input placeholder="DNI / Pasaporte" className="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
                     onChange={(e) => setCliente({...cliente, documento: e.target.value})} />
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="metodoPago" className="text-[10px] font-bold text-gray-500 uppercase">Metodo de pago</label>
+                <select
+                  id="metodoPago"
+                  className="w-full mt-2 bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
+                  value={metodoPago}
+                  onChange={(event) => setMetodoPago(event.target.value as MetodoPago)}
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="tarjeta_credito">Tarjeta credito</option>
+                  <option value="tarjeta_debito">Tarjeta debito</option>
+                  <option value="transferencia">Transferencia</option>
+                  <option value="billetera">Billetera digital</option>
+                </select>
               </div>
 
               <div className="bg-white/5 rounded-xl p-5 border border-white/5 space-y-2 font-mono text-sm">

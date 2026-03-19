@@ -62,14 +62,14 @@ export const TableHead: React.FC<TableHeadProps> = ({ children, className = '' }
   );
 };
 
-interface TableCellProps {
+interface TableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
   children: React.ReactNode;
   className?: string;
 }
 
-export const TableCell: React.FC<TableCellProps> = ({ children, className = '' }) => {
+export const TableCell: React.FC<TableCellProps> = ({ children, className = '', ...props }) => {
   return (
-    <td className={`py-3 px-4 text-sm ${className}`}>
+    <td className={`py-3 px-4 text-sm ${className}`} {...props}>
       {children}
     </td>
   );

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useTenants } from '@/hooks/useTenants';
 import { Tenant } from '@/data/TenantsData';
@@ -11,69 +11,154 @@ import { Input } from '@/components/ui/Input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import toast from 'react-hot-toast';
 
+const DEFAULT_LIMIT_BY_PLAN: Record<Tenant['plan'], number> = {
+  basico: 10,
+  pro: 50,
+  enterprise: 9999,
+};
+
+type TenantFormData = {
+  nombreAgencia: string;
+  emailAdmin: string;
+  plan: Tenant['plan'];
+  estado: Tenant['estado'];
+  fechaSuscripcion: string;
+  pais: string;
+  ciudad: string;
+  limiteVehiculos: number;
+};
+
+const INITIAL_FORM: TenantFormData = {
+  nombreAgencia: '',
+  emailAdmin: '',
+  plan: 'basico',
+  estado: 'prueba',
+  fechaSuscripcion: new Date().toISOString().split('T')[0],
+  pais: 'Colombia',
+  ciudad: '',
+  limiteVehiculos: DEFAULT_LIMIT_BY_PLAN.basico,
+};
+
 export default function TenantsPage() {
-  const { tenants, crearTenant, suspenderTenant, activarTenant, obtenerEstadisticas } = useTenants();
+  const {
+    tenants,
+    activeTenantId,
+    createTenant,
+    updateTenant,
+    toggleTenantStatus,
+    setActiveTenant,
+    obtenerEstadisticas,
+  } = useTenants();
+
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [formData, setFormData] = useState({
-    nombreAgencia: '',
-    emailAdmin: '',
-    plan: 'basico' as 'basico' | 'pro' | 'enterprise',
-    estado: 'prueba' as 'activo' | 'suspendido' | 'prueba',
-    fechaSuscripcion: new Date().toISOString().split('T')[0],
-    pais: 'Colombia',
-    ciudad: ''
-  });
+  const [editingTenantId, setEditingTenantId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<TenantFormData>(INITIAL_FORM);
 
   const stats = obtenerEstadisticas();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    crearTenant(formData);
-    toast.success('Tenant creado exitosamente');
-    setMostrarModal(false);
-    setFormData({
-      nombreAgencia: '',
-      emailAdmin: '',
-      plan: 'basico',
-      estado: 'prueba',
-      fechaSuscripcion: new Date().toISOString().split('T')[0],
-      pais: 'Colombia',
-      ciudad: ''
-    });
+  const selectedTenant = useMemo(
+    () => tenants.find((tenant) => tenant.id === activeTenantId) ?? null,
+    [activeTenantId, tenants],
+  );
+
+  const openCreate = () => {
+    setEditingTenantId(null);
+    setFormData(INITIAL_FORM);
+    setMostrarModal(true);
   };
 
-  const getPlanColor = (plan: string) => {
+  const openEdit = (tenant: Tenant) => {
+    setEditingTenantId(tenant.id);
+    setFormData({
+      nombreAgencia: tenant.nombreAgencia,
+      emailAdmin: tenant.emailAdmin,
+      plan: tenant.plan,
+      estado: tenant.estado,
+      fechaSuscripcion: tenant.fechaSuscripcion,
+      pais: tenant.pais,
+      ciudad: tenant.ciudad,
+      limiteVehiculos: tenant.limiteVehiculos,
+    });
+    setMostrarModal(true);
+  };
+
+  const handlePlanChange = (plan: Tenant['plan']) => {
+    setFormData((current) => ({
+      ...current,
+      plan,
+      limiteVehiculos: current.limiteVehiculos === DEFAULT_LIMIT_BY_PLAN[current.plan]
+        ? DEFAULT_LIMIT_BY_PLAN[plan]
+        : current.limiteVehiculos,
+    }));
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (editingTenantId) {
+      updateTenant(editingTenantId, {
+        ...formData,
+        limiteVehiculos: Number(formData.limiteVehiculos),
+      });
+      toast.success('Tenant actualizado exitosamente');
+    } else {
+      createTenant({
+        ...formData,
+        limiteVehiculos: Number(formData.limiteVehiculos),
+      });
+      toast.success('Tenant creado exitosamente');
+    }
+
+    setMostrarModal(false);
+    setEditingTenantId(null);
+    setFormData(INITIAL_FORM);
+  };
+
+  const getPlanColor = (plan: Tenant['plan']) => {
     switch (plan) {
-      case 'basico': return 'bg-gray-500/20 text-gray-400';
-      case 'pro': return 'bg-blue-500/20 text-blue-400';
-      case 'enterprise': return 'bg-purple-500/20 text-purple-400';
-      default: return 'bg-gray-500/20 text-gray-400';
+      case 'basico':
+        return 'bg-gray-500/20 text-gray-400';
+      case 'pro':
+        return 'bg-blue-500/20 text-blue-400';
+      case 'enterprise':
+        return 'bg-purple-500/20 text-purple-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
-  const getPlanPrecio = (plan: string) => {
+  const getPlanPrecio = (plan: Tenant['plan']) => {
     switch (plan) {
-      case 'basico': return 49;
-      case 'pro': return 99;
-      case 'enterprise': return 199;
-      default: return 0;
+      case 'basico':
+        return 49;
+      case 'pro':
+        return 99;
+      case 'enterprise':
+        return 199;
+      default:
+        return 0;
     }
   };
 
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap justify-between items-center gap-3">
           <div>
-            <h1 className="text-3xl font-black italic uppercase">🌐 Gestión de Tenants</h1>
+            <h1 className="text-3xl font-black italic uppercase">Gestion de Tenants</h1>
             <p className="text-gray-500">Panel de Super Admin - RentOS</p>
           </div>
-          <Button onClick={() => setMostrarModal(true)}>
-            + Nueva Agencia
-          </Button>
+          <Button onClick={openCreate}>+ Nueva Agencia</Button>
         </div>
 
-        {/* Métricas Globales */}
+        <Card>
+          <p className="text-xs text-gray-500 uppercase font-bold mb-1">Tenant activo para operacion</p>
+          <p className="text-lg font-black text-[#00E5FF]">
+            {selectedTenant ? `${selectedTenant.nombreAgencia} (${selectedTenant.tenantId})` : 'No seleccionado'}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">El limite de flota se valida usando este tenant al crear vehiculos.</p>
+        </Card>
+
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <Card>
             <p className="text-xs text-gray-500 uppercase font-bold mb-2">Total Agencias</p>
@@ -97,17 +182,16 @@ export default function TenantsPage() {
           </Card>
         </div>
 
-        {/* Tabla de Tenants */}
         <div className="bg-[#1E1E1E] border border-gray-800 rounded-xl overflow-hidden">
           <Table caption="Lista de agencias suscritas">
             <TableHeader>
               <TableRow hover={false}>
                 <TableHead>Agencia</TableHead>
+                <TableHead>Tenant ID</TableHead>
                 <TableHead>Plan</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Suscripción</TableHead>
-                <TableHead>Vehículos</TableHead>
-                <TableHead>Ingresos RentOS</TableHead>
+                <TableHead>Flota (Uso / Limite)</TableHead>
+                <TableHead>Suscripcion</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -131,61 +215,59 @@ export default function TenantsPage() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <p className="text-xs font-mono text-gray-300">{tenant.tenantId}</p>
+                  </TableCell>
+                  <TableCell>
                     <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${getPlanColor(tenant.plan)}`}>
                       {tenant.plan}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">${getPlanPrecio(tenant.plan)}/mes</p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={
-                      tenant.estado === 'activo' ? 'success' :
-                      tenant.estado === 'prueba' ? 'warning' : 'danger'
-                    }>
+                    <Badge variant={tenant.estado === 'activo' ? 'success' : tenant.estado === 'prueba' ? 'warning' : 'danger'}>
                       {tenant.estado}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <p className="text-sm font-black text-[#00E5FF]">
+                      {tenant.vehiculosRegistrados} / {tenant.limiteVehiculos >= 9999 ? 'Ilimitado' : tenant.limiteVehiculos}
+                    </p>
                   </TableCell>
                   <TableCell>
                     <p className="text-sm">
                       {new Date(tenant.fechaSuscripcion).toLocaleDateString('es-CO', {
                         year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
+                        day: 'numeric',
                       })}
                     </p>
                   </TableCell>
                   <TableCell>
-                    <p className="text-lg font-black text-[#00E5FF]">{tenant.vehiculosRegistrados}</p>
-                  </TableCell>
-                  <TableCell>
-                    <p className="text-sm font-bold">${tenant.ingresosGenerados.toLocaleString()}</p>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {tenant.estado === 'activo' ? (
-                        <Button 
-                          size="sm" 
-                          variant="danger"
-                          onClick={() => {
-                            if (confirm(`¿Suspender ${tenant.nombreAgencia}?`)) {
-                              suspenderTenant(tenant.id);
-                              toast.success('Tenant suspendido');
-                            }
-                          }}
-                        >
-                          Suspender
-                        </Button>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          variant="secondary"
-                          onClick={() => {
-                            activarTenant(tenant.id);
-                            toast.success('Tenant activado');
-                          }}
-                        >
-                          Activar
-                        </Button>
-                      )}
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant={tenant.estado === 'suspendido' ? 'secondary' : 'danger'}
+                        onClick={() => {
+                          toggleTenantStatus(tenant.id);
+                          toast.success(tenant.estado === 'suspendido' ? 'Tenant activado' : 'Tenant suspendido');
+                        }}
+                      >
+                        {tenant.estado === 'suspendido' ? 'Activar' : 'Suspender'}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => openEdit(tenant)}>
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={tenant.id === activeTenantId ? 'primary' : 'secondary'}
+                        onClick={() => {
+                          setActiveTenant(tenant.id);
+                          toast.success(`${tenant.nombreAgencia} seleccionado`);
+                        }}
+                        aria-label={`Seleccionar tenant ${tenant.nombreAgencia}`}
+                      >
+                        {tenant.id === activeTenantId ? 'Activo' : 'Seleccionar'}
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -194,57 +276,110 @@ export default function TenantsPage() {
           </Table>
         </div>
 
-        {/* Modal Nuevo Tenant */}
-        <Modal isOpen={mostrarModal} onClose={() => setMostrarModal(false)} title="➕ Nueva Agencia" size="lg">
+        <Modal
+          isOpen={mostrarModal}
+          onClose={() => {
+            setMostrarModal(false);
+            setEditingTenantId(null);
+            setFormData(INITIAL_FORM);
+          }}
+          title={editingTenantId ? 'Editar Agencia' : 'Nueva Agencia'}
+          size="lg"
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Nombre de la Agencia"
                 value={formData.nombreAgencia}
-                onChange={(e) => setFormData({ ...formData, nombreAgencia: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, nombreAgencia: event.target.value })}
                 required
               />
               <Input
                 label="Email del Administrador"
                 type="email"
                 value={formData.emailAdmin}
-                onChange={(e) => setFormData({ ...formData, emailAdmin: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, emailAdmin: event.target.value })}
                 required
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Plan</label>
+                <label htmlFor="tenant-plan" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Plan</label>
                 <select
+                  id="tenant-plan"
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
                   value={formData.plan}
-                  onChange={(e) => setFormData({ ...formData, plan: e.target.value as any })}
+                  onChange={(event) => handlePlanChange(event.target.value as Tenant['plan'])}
                 >
-                  <option value="basico">Básico ($49/mes)</option>
+                  <option value="basico">Basico ($49/mes)</option>
                   <option value="pro">Pro ($99/mes)</option>
                   <option value="enterprise">Enterprise ($199/mes)</option>
                 </select>
               </div>
+
+              <div>
+                <label htmlFor="tenant-status" className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Estado</label>
+                <select
+                  id="tenant-status"
+                  className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
+                  value={formData.estado}
+                  onChange={(event) => setFormData({ ...formData, estado: event.target.value as Tenant['estado'] })}
+                >
+                  <option value="activo">Activo</option>
+                  <option value="prueba">Prueba</option>
+                  <option value="suspendido">Suspendido</option>
+                </select>
+              </div>
+
               <Input
-                label="País"
+                label="Pais"
                 value={formData.pais}
-                onChange={(e) => setFormData({ ...formData, pais: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, pais: event.target.value })}
                 required
               />
               <Input
                 label="Ciudad"
                 value={formData.ciudad}
-                onChange={(e) => setFormData({ ...formData, ciudad: e.target.value })}
+                onChange={(event) => setFormData({ ...formData, ciudad: event.target.value })}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Limite maximo de vehiculos"
+                type="number"
+                value={String(formData.limiteVehiculos)}
+                onChange={(event) => setFormData({ ...formData, limiteVehiculos: Number(event.target.value) })}
+                min={1}
+                required
+              />
+              <Input
+                label="Fecha de suscripcion"
+                type="date"
+                value={formData.fechaSuscripcion}
+                onChange={(event) => setFormData({ ...formData, fechaSuscripcion: event.target.value })}
                 required
               />
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="button" variant="ghost" onClick={() => setMostrarModal(false)} className="flex-1">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setMostrarModal(false);
+                  setEditingTenantId(null);
+                  setFormData(INITIAL_FORM);
+                }}
+                className="flex-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" className="flex-1">Crear Tenant</Button>
+              <Button type="submit" className="flex-1">
+                {editingTenantId ? 'Guardar Cambios' : 'Crear Tenant'}
+              </Button>
             </div>
           </form>
         </Modal>
