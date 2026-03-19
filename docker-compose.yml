@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   app:
     build:
@@ -26,9 +28,21 @@ services:
       WATCHPACK_POLLING: "true"
     volumes:
       - .:/app
+<<<<<<< HEAD
       - rentos_node_modules:/app/node_modules
       - rentos_next_cache:/app/.next
 
 volumes:
   rentos_node_modules:
   rentos_next_cache:
+=======
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    restart: unless-stopped 
+>>>>>>> 0be1bb153886424102e79b6bf1b1e34d02f1af8f
