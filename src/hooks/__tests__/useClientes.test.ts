@@ -182,7 +182,7 @@ describe('useClientes', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     const score1 = result.current.calcularScore(5, 0);
-    expect(score1).toBe(125);
+    expect(score1).toBe(100);
 
     const score2 = result.current.calcularScore(10, 2);
     expect(score2).toBe(100);

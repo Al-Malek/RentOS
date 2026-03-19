@@ -1,16 +1,22 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useVehiculos } from '@/hooks/useVehiculos';
+import { useReservas } from '@/hooks/useReservas';
+import { useClientes } from '@/hooks/useClientes';
 import { useConfig } from '@/context/ConfigContext';
 import { Vehiculo } from '@/data/HU1_VehiculosData';
-import { MetodoPago, Reserva, TarifaExtra, TarifasIniciales } from '@/data/HU3_ReservasData';
+import { MetodoPago, TarifaExtra, TarifasIniciales } from '@/data/HU3_ReservasData';
+import { calculateReservationAmounts, calculateReservationDays, isLicenseValidForDate } from '@/hooks/reservas.utils';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
 
 export default function ReservasPage() {
   const { vehiculos, setVehiculos } = useVehiculos(); 
+  const { reservas, crearReserva, verificarDisponibilidad: verificarDisponibilidadReserva } = useReservas();
+  const { clientes } = useClientes();
   const { highContrast } = useConfig();
-  
-  const [reservas, setReservas] = useState<Reserva[]>([]);
+
   const [tarifasExtras, setTarifasExtras] = useState<TarifaExtra[]>(TarifasIniciales);
   
   const [fechas, setFechas] = useState({ 
@@ -19,58 +25,48 @@ export default function ReservasPage() {
   });
   
   const [motoSeleccionada, setMotoSeleccionada] = useState<Vehiculo | null>(null);
-  const [cliente, setCliente] = useState({ nombre: '', documento: '' });
+  const [clienteQuery, setClienteQuery] = useState('');
+  const [clienteSeleccionadoId, setClienteSeleccionadoId] = useState('');
   const [metodoPago, setMetodoPago] = useState<MetodoPago>('efectivo');
   const [nuevaTarifa, setNuevaTarifa] = useState({ nombre: '', precio: 0, esPorDia: true });
 
-  useEffect(() => {
-    const stored = localStorage.getItem('reservas_db');
-    if (stored) {
-      setReservas(JSON.parse(stored));
+  const clientesFiltrados = useMemo(() => {
+    const query = clienteQuery.trim().toLowerCase();
+    if (!query) {
+      return clientes.slice(0, 8);
     }
-  }, []);
 
-  useEffect(() => {
-    localStorage.setItem('reservas_db', JSON.stringify(reservas));
-  }, [reservas]);
+    return clientes
+      .filter((cliente) =>
+        cliente.nombre.toLowerCase().includes(query) || cliente.numeroDocumento.toLowerCase().includes(query),
+      )
+      .slice(0, 8);
+  }, [clienteQuery, clientes]);
 
-  const verificarDisponibilidad = (moto: Vehiculo) => {
-    const inicioSolicitud = new Date(fechas.inicio).getTime();
-    const finSolicitud = new Date(fechas.fin).getTime();
+  const clienteSeleccionado = clientes.find((cliente) => cliente.id === clienteSeleccionadoId);
 
+  const esMotoDisponible = (moto: Vehiculo) => {
     if (moto.estado === 'maintenance') {
       return false;
     }
 
-    const tieneConflicto = reservas.some(res => {
-      if (res.vehiculoId !== moto.id || res.estado === 'cancelada') return false;
-      
-      const inicioRes = new Date(res.fechaInicio).getTime();
-      const finRes = new Date(res.fechaFin).getTime();
-
-      return (inicioSolicitud <= finRes && finSolicitud >= inicioRes);
-    });
-
-    return !tieneConflicto;
+    return verificarDisponibilidadReserva(moto.id, fechas.inicio, fechas.fin);
   };
 
-  const motosDisponibles = vehiculos.filter(verificarDisponibilidad);
+  const motosDisponibles = vehiculos.filter(esMotoDisponible);
 
   const calcularDias = () => {
-    const inicio = new Date(fechas.inicio).getTime();
-    const fin = new Date(fechas.fin).getTime();
-    const diff = fin - inicio;
-    return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+    return calculateReservationDays(fechas.inicio, fechas.fin);
   };
 
   const calcularDesglose = (precioDiaMoto: number) => {
     const dias = calcularDias();
-    const subtotalRenta = dias * precioDiaMoto;
     let totalExtras = 0;
     tarifasExtras.forEach(t => {
       totalExtras += t.esPorDia ? (t.precio * dias) : t.precio;
     });
-    return { dias, subtotalRenta, totalExtras, granTotal: subtotalRenta + totalExtras };
+    const { subtotalRenta, total, deposito } = calculateReservationAmounts(precioDiaMoto, dias, totalExtras);
+    return { dias, subtotalRenta, totalExtras, granTotal: total, deposito };
   };
 
   const agregarTarifa = () => {
@@ -84,20 +80,39 @@ export default function ReservasPage() {
   };
 
   const confirmarReserva = () => {
-    if (!motoSeleccionada) return;
+    if (!motoSeleccionada) {
+      toast.error('Selecciona un vehículo para continuar.');
+      return;
+    }
+
+    if (!clienteSeleccionado) {
+      toast.error('Selecciona un cliente existente para crear la reserva.');
+      return;
+    }
+
+    if (!isLicenseValidForDate(clienteSeleccionado, fechas.inicio)) {
+      toast.error('La licencia del cliente no es válida para la fecha de inicio.');
+      return;
+    }
+
+    if (!verificarDisponibilidadReserva(motoSeleccionada.id, fechas.inicio, fechas.fin)) {
+      toast.error('El vehículo ya tiene una reserva en ese rango de fechas.');
+      return;
+    }
+
     const desglose = calcularDesglose(motoSeleccionada.precioDia);
-    
-    const nuevaReserva: Reserva = {
-      id: Date.now().toString(),
+
+    crearReserva({
       vehiculoId: motoSeleccionada.id,
-      cliente: cliente.nombre,
-      documento: cliente.documento,
+      cliente: clienteSeleccionado.nombre,
+      documento: clienteSeleccionado.numeroDocumento,
       fechaInicio: fechas.inicio,
       fechaFin: fechas.fin,
       desglose: {
         dias: desglose.dias,
         precioDia: motoSeleccionada.precioDia,
-        totalExtras: desglose.totalExtras
+        totalExtras: desglose.totalExtras,
+        deposito: desglose.deposito,
       },
       totalFinal: desglose.granTotal,
       estado: 'confirmada',
@@ -107,9 +122,7 @@ export default function ReservasPage() {
         fechaOperacion: fechas.inicio,
         referencia: `TXN-${Date.now()}`,
       }
-    };
-
-    setReservas([...reservas, nuevaReserva]);
+    });
 
     const hoy = new Date().toISOString().split('T')[0];
     if (fechas.inicio === hoy) {
@@ -120,8 +133,10 @@ export default function ReservasPage() {
     }
 
     setMotoSeleccionada(null);
-    setCliente({ nombre: '', documento: '' });
+    setClienteQuery('');
+    setClienteSeleccionadoId('');
     setMetodoPago('efectivo');
+    toast.success('Reserva creada correctamente.');
   };
 
   const themeCard = highContrast ? 'bg-white border-gray-300 text-black' : 'bg-[#1E1E1E] border-gray-800 text-white';
@@ -130,8 +145,15 @@ export default function ReservasPage() {
   return (
     <MainLayout>
       <div className="mb-8">
-        <h2 className="text-3xl font-black italic uppercase italic">📅 Motor de Reservas</h2>
-        <p className="text-gray-500">Gestión de disponibilidad y facturación</p>
+        <div className="flex flex-wrap justify-between gap-3 items-center">
+          <div>
+            <h2 className="text-3xl font-black italic uppercase italic">📅 Motor de Reservas</h2>
+            <p className="text-gray-500">Gestión de disponibilidad y facturación</p>
+          </div>
+          <Link href="/dashboard/reservas/check-in" className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider">
+            Check-in / Check-out
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -282,16 +304,44 @@ export default function ReservasPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Cliente</label>
-                  <input placeholder="Nombre Completo" className="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
-                    onChange={(e) => setCliente({...cliente, nombre: e.target.value})} />
+                  <label htmlFor="clienteBusqueda" className="text-[10px] font-bold text-gray-500 uppercase">Buscar cliente</label>
+                  <input
+                    id="clienteBusqueda"
+                    placeholder="Nombre o documento"
+                    className="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
+                    value={clienteQuery}
+                    onChange={(e) => setClienteQuery(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-500 uppercase">Documento ID</label>
-                  <input placeholder="DNI / Pasaporte" className="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
-                    onChange={(e) => setCliente({...cliente, documento: e.target.value})} />
+                  <label htmlFor="clienteSeleccionado" className="text-[10px] font-bold text-gray-500 uppercase">Cliente del sistema</label>
+                  <select
+                    id="clienteSeleccionado"
+                    className="w-full bg-transparent border-b border-gray-700 py-2 text-sm outline-none focus:border-[#00E5FF] transition-colors"
+                    value={clienteSeleccionadoId}
+                    onChange={(event) => setClienteSeleccionadoId(event.target.value)}
+                  >
+                    <option value="">Seleccionar cliente</option>
+                    {clientesFiltrados.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.nombre} ({item.numeroDocumento})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
+
+              {clienteSeleccionado && (
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10 text-xs">
+                  <p className="text-gray-400">Licencia: <span className="text-white font-bold">{clienteSeleccionado.licencia.numero}</span></p>
+                  <p className="text-gray-400 mt-1">Vencimiento: <span className="text-white font-bold">{clienteSeleccionado.licencia.fechaVencimiento}</span></p>
+                  <p className={`mt-2 font-bold ${isLicenseValidForDate(clienteSeleccionado, fechas.inicio) ? 'text-green-400' : 'text-red-400'}`}>
+                    {isLicenseValidForDate(clienteSeleccionado, fechas.inicio)
+                      ? 'Licencia válida para la reserva'
+                      : 'Licencia vencida o inválida para la fecha seleccionada'}
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label htmlFor="metodoPago" className="text-[10px] font-bold text-gray-500 uppercase">Metodo de pago</label>
@@ -327,7 +377,12 @@ export default function ReservasPage() {
                 ))}
 
                 <div className="border-t border-dashed border-gray-600 my-3 pt-3 flex justify-between items-center">
-                  <span className="font-black text-lg uppercase italic text-[#00E5FF]">Total a Pagar</span>
+                  <span className="font-black text-lg uppercase italic text-[#00E5FF]">Depósito requerido</span>
+                  <span className="font-black text-xl text-white">${calcularDesglose(motoSeleccionada.precioDia).deposito}</span>
+                </div>
+
+                <div className="border-t border-dashed border-gray-600 my-3 pt-3 flex justify-between items-center">
+                  <span className="font-black text-lg uppercase italic text-[#00E5FF]">Total a pagar</span>
                   <span className="font-black text-2xl text-white">${calcularDesglose(motoSeleccionada.precioDia).granTotal}</span>
                 </div>
               </div>

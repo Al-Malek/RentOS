@@ -25,6 +25,7 @@ export interface Reserva {
     dias: number;
     precioDia: number;
     totalExtras: number;
+    deposito: number;
   };
   totalFinal: number;
   estado: 'confirmada' | 'finalizada' | 'cancelada';
@@ -44,7 +45,7 @@ export const ReservasMock: Reserva[] = [
     documento: '12345678',
     fechaInicio: '2026-03-10',
     fechaFin: '2026-03-15',
-    desglose: { dias: 5, precioDia: 50, totalExtras: 50 },
+    desglose: { dias: 5, precioDia: 50, totalExtras: 50, deposito: 60 },
     totalFinal: 300,
     estado: 'confirmada',
     pago: {

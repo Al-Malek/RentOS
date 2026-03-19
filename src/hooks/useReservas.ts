@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PagoReserva, Reserva } from '@/data/HU3_ReservasData';
+import { DEFAULT_DEPOSIT_RATE, hasReservationOverlap } from '@/hooks/reservas.utils';
 
 export const useReservas = () => {
   const [reservas, setReservas] = useState<Reserva[]>([]);
@@ -14,6 +15,10 @@ export const useReservas = () => {
         setReservas(
           parsed.map((reserva) => ({
             ...reserva,
+            desglose: {
+              ...reserva.desglose,
+              deposito: reserva.desglose?.deposito ?? Math.round(reserva.totalFinal * DEFAULT_DEPOSIT_RATE),
+            },
             pago: reserva.pago ?? {
               metodoPago: 'efectivo',
               estado: 'procesado',
@@ -63,20 +68,7 @@ export const useReservas = () => {
   };
 
   const verificarDisponibilidad = (vehiculoId: number, fechaInicio: string, fechaFin: string, excluirReservaId?: string): boolean => {
-    const inicioSolicitud = new Date(fechaInicio).getTime();
-    const finSolicitud = new Date(fechaFin).getTime();
-
-    const tieneConflicto = reservas.some(res => {
-      if (res.vehiculoId !== vehiculoId || res.estado === 'cancelada') return false;
-      if (excluirReservaId && res.id === excluirReservaId) return false;
-      
-      const inicioRes = new Date(res.fechaInicio).getTime();
-      const finRes = new Date(res.fechaFin).getTime();
-
-      return (inicioSolicitud <= finRes && finSolicitud >= inicioRes);
-    });
-
-    return !tieneConflicto;
+    return !hasReservationOverlap(reservas, vehiculoId, fechaInicio, fechaFin, excluirReservaId);
   };
 
   return {

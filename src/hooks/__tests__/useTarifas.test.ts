@@ -4,6 +4,7 @@ import { useTarifas } from '@/hooks/useTarifas';
 describe('useTarifas', () => {
   beforeEach(() => {
     localStorage.clear();
+    localStorage.setItem('rentos_tarifas', JSON.stringify([]));
   });
 
   it('creates a new tariff rule', async () => {
