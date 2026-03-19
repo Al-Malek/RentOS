@@ -1,58 +1,191 @@
 import { useState, useEffect } from 'react';
-import { Notificacion, NotificacionesMock } from '@/data/NotificacionesData';
+import {
+  Notificacion,
+  NotificacionProgramada,
+  NotificacionesMock,
+  PlantillaNotificacion,
+  PlantillasMock,
+} from '@/data/NotificacionesData';
 import toast from 'react-hot-toast';
+import { applyTemplateString, calculateReminderSendAt, shouldTrigger24hReminder } from '@/hooks/notificaciones.utils';
+
+const STORAGE_NOTIFICACIONES = 'rentos_notificaciones';
+const STORAGE_PLANTILLAS = 'rentos_notificacion_templates';
+const STORAGE_PROGRAMADAS = 'rentos_notificacion_queue';
+
+type NotificacionInput = Omit<Notificacion, 'id' | 'fecha' | 'estado'>;
+
+interface ReminderScheduleInput {
+  reservaId: string;
+  destinatario: string;
+  email: string;
+  vehiculo: string;
+  fechaInicio: string;
+}
 
 export const useNotificaciones = () => {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+  const [templates, setTemplates] = useState<PlantillaNotificacion[]>([]);
+  const [programadas, setProgramadas] = useState<NotificacionProgramada[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem('rentos_notificaciones');
+    const saved = localStorage.getItem(STORAGE_NOTIFICACIONES);
     if (saved) {
       setNotificaciones(JSON.parse(saved));
     } else {
       setNotificaciones(NotificacionesMock);
-      localStorage.setItem('rentos_notificaciones', JSON.stringify(NotificacionesMock));
+      localStorage.setItem(STORAGE_NOTIFICACIONES, JSON.stringify(NotificacionesMock));
     }
+
+    const savedTemplates = localStorage.getItem(STORAGE_PLANTILLAS);
+    if (savedTemplates) {
+      setTemplates(JSON.parse(savedTemplates));
+    } else {
+      setTemplates(PlantillasMock);
+      localStorage.setItem(STORAGE_PLANTILLAS, JSON.stringify(PlantillasMock));
+    }
+
+    const savedQueue = localStorage.getItem(STORAGE_PROGRAMADAS);
+    if (savedQueue) {
+      setProgramadas(JSON.parse(savedQueue));
+    } else {
+      setProgramadas([]);
+      localStorage.setItem(STORAGE_PROGRAMADAS, JSON.stringify([]));
+    }
+
     setLoading(false);
   }, []);
 
   const saveToStorage = (nuevasNotificaciones: Notificacion[]) => {
     setNotificaciones(nuevasNotificaciones);
-    localStorage.setItem('rentos_notificaciones', JSON.stringify(nuevasNotificaciones));
+    localStorage.setItem(STORAGE_NOTIFICACIONES, JSON.stringify(nuevasNotificaciones));
   };
 
-  const enviarNotificacion = (notificacion: Omit<Notificacion, 'id' | 'fecha' | 'estado'>): Promise<Notificacion> => {
-    return new Promise((resolve) => {
-      // Simular delay de envío
-      setTimeout(() => {
-        const nuevaNotificacion: Notificacion = {
-          ...notificacion,
-          id: `not-${Date.now()}`,
-          fecha: new Date().toISOString(),
-          estado: Math.random() > 0.1 ? 'enviado' : 'fallido' // 90% éxito
-        };
-        
-        saveToStorage([nuevaNotificacion, ...notificaciones]);
-        
-        if (nuevaNotificacion.estado === 'enviado') {
-          toast.success(`Email enviado a ${notificacion.email}`);
-        } else {
-          toast.error(`Error al enviar email a ${notificacion.email}`);
-        }
-        
-        resolve(nuevaNotificacion);
-      }, 1000);
+  const saveTemplates = (next: PlantillaNotificacion[]) => {
+    setTemplates(next);
+    localStorage.setItem(STORAGE_PLANTILLAS, JSON.stringify(next));
+  };
+
+  const saveProgramadas = (next: NotificacionProgramada[]) => {
+    setProgramadas(next);
+    localStorage.setItem(STORAGE_PROGRAMADAS, JSON.stringify(next));
+  };
+
+  const registrarNotificacion = (notificacion: NotificacionInput, estado: Notificacion['estado'] = 'enviado') => {
+    const nuevaNotificacion: Notificacion = {
+      ...notificacion,
+      id: `not-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      fecha: new Date().toISOString(),
+      estado,
+    };
+
+    saveToStorage([nuevaNotificacion, ...notificaciones]);
+    return nuevaNotificacion;
+  };
+
+  const enviarNotificacion = (notificacion: NotificacionInput): Promise<Notificacion> => {
+    return Promise.resolve(registrarNotificacion(notificacion, 'enviado')).then((created) => {
+      toast.success(`Email enviado a ${notificacion.email}`);
+      return created;
     });
   };
 
+  const updateTemplate = (
+    tipo: PlantillaNotificacion['tipo'],
+    asuntoTemplate: string,
+    mensajeTemplate: string,
+  ) => {
+    const next = templates.map((template) => (
+      template.tipo === tipo ? { ...template, asuntoTemplate, mensajeTemplate } : template
+    ));
+    saveTemplates(next);
+  };
+
+  const buildTemplate = (tipo: PlantillaNotificacion['tipo'], variables: Record<string, string | number>) => {
+    const template = templates.find((item) => item.tipo === tipo);
+    if (!template) {
+      return {
+        asunto: '',
+        mensaje: '',
+      };
+    }
+
+    return {
+      asunto: applyTemplateString(template.asuntoTemplate, variables),
+      mensaje: applyTemplateString(template.mensajeTemplate, variables),
+    };
+  };
+
+  const scheduleReminder24h = (payload: ReminderScheduleInput) => {
+    const exists = programadas.some((item) => item.reservaId === payload.reservaId && item.estado === 'pendiente');
+    if (exists) {
+      return null;
+    }
+
+    const programada: NotificacionProgramada = {
+      id: `prog-${Date.now()}-${payload.reservaId}`,
+      reservaId: payload.reservaId,
+      destinatario: payload.destinatario,
+      email: payload.email,
+      vehiculo: payload.vehiculo,
+      fechaInicio: payload.fechaInicio,
+      sendAt: calculateReminderSendAt(payload.fechaInicio),
+      estado: 'pendiente',
+    };
+
+    saveProgramadas([programada, ...programadas]);
+    return programada;
+  };
+
+  const processScheduledReminders = async (nowIso: string = new Date().toISOString()) => {
+    const due = programadas.filter((item) => item.estado === 'pendiente' && shouldTrigger24hReminder(item.fechaInicio, nowIso));
+    if (due.length === 0) {
+      return [];
+    }
+
+    const sent = await Promise.all(due.map(async (item) => {
+      const content = buildTemplate('recordatorio', {
+        reservaId: item.reservaId,
+        cliente: item.destinatario,
+        vehiculo: item.vehiculo,
+        fechaInicio: item.fechaInicio,
+      });
+
+      return enviarNotificacion({
+        tipo: 'recordatorio',
+        destinatario: item.destinatario,
+        email: item.email,
+        asunto: content.asunto,
+        mensaje: content.mensaje,
+        reservaId: item.reservaId,
+      });
+    }));
+
+    const nextQueue = programadas.map((item) => (
+      due.some((dueItem) => dueItem.id === item.id)
+        ? { ...item, estado: 'enviado' as const }
+        : item
+    ));
+    saveProgramadas(nextQueue);
+
+    return sent;
+  };
+
   const enviarConfirmacionReserva = (reservaId: string, cliente: string, email: string, vehiculo: string, fechas: string) => {
+    const content = buildTemplate('confirmacion', {
+      reservaId,
+      cliente,
+      vehiculo,
+      fechas,
+    });
+
     return enviarNotificacion({
       tipo: 'confirmacion',
       destinatario: cliente,
       email,
-      asunto: `Confirmación de Reserva #${reservaId}`,
-      mensaje: `Tu reserva ha sido confirmada para el vehículo ${vehiculo} ${fechas}.`,
+      asunto: content.asunto || `Confirmación de Reserva #${reservaId}`,
+      mensaje: content.mensaje || `Tu reserva ha sido confirmada para el vehículo ${vehiculo} ${fechas}.`,
       reservaId
     });
   };
@@ -81,10 +214,16 @@ export const useNotificaciones = () => {
 
   return {
     notificaciones,
+    templates,
+    programadas,
     loading,
     enviarNotificacion,
     enviarConfirmacionReserva,
     enviarCancelacion,
-    enviarRecibo
+    enviarRecibo,
+    updateTemplate,
+    buildTemplate,
+    scheduleReminder24h,
+    processScheduledReminders,
   };
 };

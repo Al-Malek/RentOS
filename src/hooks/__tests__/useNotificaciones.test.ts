@@ -138,4 +138,27 @@ describe('useNotificaciones', () => {
       }
     });
   });
+
+  it('processes 24h queue and registers send logs', async () => {
+    const { result } = renderHook(() => useNotificaciones());
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.scheduleReminder24h({
+        reservaId: 'res-900',
+        destinatario: 'Cliente Programado',
+        email: 'programado@test.com',
+        vehiculo: 'Yamaha MT-03',
+        fechaInicio: '2026-03-20T10:00:00.000Z',
+      });
+    });
+
+    await act(async () => {
+      await result.current.processScheduledReminders('2026-03-19T12:00:00.000Z');
+    });
+
+    expect(result.current.notificaciones.some((item) => item.reservaId === 'res-900')).toBe(true);
+    expect(result.current.programadas.find((item) => item.reservaId === 'res-900')?.estado).toBe('enviado');
+  });
 });

@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import { ClienteInput } from '@/hooks/clientes.utils';
 
 export default function ClientesPage() {
   const { clientes, crearCliente, actualizarCliente, eliminarCliente, buscarClientes } = useClientes();
@@ -37,13 +38,29 @@ export default function ClientesPage() {
         actualizarCliente(clienteEditar.id, formData);
         toast.success('Cliente actualizado exitosamente');
       } else {
-        crearCliente(formData as any);
+        const payload: ClienteInput = {
+          nombre: formData.nombre ?? '',
+          tipoDocumento: formData.tipoDocumento ?? 'CC',
+          numeroDocumento: formData.numeroDocumento ?? '',
+          telefono: formData.telefono ?? '',
+          email: formData.email ?? '',
+          fechaNacimiento: formData.fechaNacimiento ?? '',
+          licencia: {
+            numero: formData.licencia?.numero ?? '',
+            categoria: formData.licencia?.categoria ?? 'A2',
+            fechaVencimiento: formData.licencia?.fechaVencimiento ?? '',
+          },
+          direccion: formData.direccion ?? '',
+          avatar: formData.avatar,
+        };
+        crearCliente(payload);
         toast.success('Cliente creado exitosamente');
       }
       setMostrarModal(false);
       resetForm();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo guardar el cliente';
+      toast.error(message);
     }
   };
 
@@ -202,7 +219,7 @@ export default function ClientesPage() {
                 <select
                   className="w-full bg-[#1A1A24] border border-gray-700 rounded-lg p-2.5 text-sm text-white"
                   value={formData.tipoDocumento}
-                  onChange={(e) => setFormData({ ...formData, tipoDocumento: e.target.value as any })}
+                  onChange={(e) => setFormData({ ...formData, tipoDocumento: e.target.value as Cliente['tipoDocumento'] })}
                 >
                   <option value="CC">CC</option>
                   <option value="Pasaporte">Pasaporte</option>

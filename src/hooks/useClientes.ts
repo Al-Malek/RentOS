@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Cliente, ClientesMock } from '@/data/ClientesData';
+import { ClienteInput, normalizeCliente, validateClienteInput } from '@/hooks/clientes.utils';
 
 export const useClientes = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -10,12 +11,13 @@ export const useClientes = () => {
     const saved = localStorage.getItem('rentos_clientes');
     if (saved) {
       try {
-        setClientes(JSON.parse(saved));
+        const parsed = JSON.parse(saved) as Cliente[];
+        setClientes(parsed.map(normalizeCliente));
       } catch (e) {
         setError('Error al cargar clientes');
       }
     } else {
-      setClientes(ClientesMock);
+      setClientes(ClientesMock.map(normalizeCliente));
       localStorage.setItem('rentos_clientes', JSON.stringify(ClientesMock));
     }
     setLoading(false);
@@ -26,11 +28,13 @@ export const useClientes = () => {
     localStorage.setItem('rentos_clientes', JSON.stringify(nuevosClientes));
   };
 
-  const crearCliente = (cliente: Omit<Cliente, 'id' | 'reservasTotales' | 'totalGastado' | 'cancelaciones' | 'score'>) => {
+  const crearCliente = (cliente: ClienteInput) => {
     // Validar documento duplicado
     if (clientes.some(c => c.numeroDocumento === cliente.numeroDocumento)) {
       throw new Error('Ya existe un cliente con este número de documento');
     }
+
+    validateClienteInput(cliente);
 
     const nuevoCliente: Cliente = {
       ...cliente,
@@ -38,7 +42,8 @@ export const useClientes = () => {
       reservasTotales: 0,
       totalGastado: 0,
       cancelaciones: 0,
-      score: 100
+      score: 100,
+      incidentes: [],
     };
     saveToStorage([...clientes, nuevoCliente]);
     return nuevoCliente;

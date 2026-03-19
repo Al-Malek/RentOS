@@ -1,6 +1,6 @@
 export interface Notificacion {
   id: string;
-  tipo: 'confirmacion' | 'recordatorio' | 'cancelacion' | 'recibo';
+  tipo: 'confirmacion' | 'recordatorio' | 'cancelacion' | 'recibo' | 'mora';
   destinatario: string;
   email: string;
   asunto: string;
@@ -9,6 +9,41 @@ export interface Notificacion {
   estado: 'enviado' | 'fallido' | 'pendiente';
   reservaId?: string;
 }
+
+export interface PlantillaNotificacion {
+  tipo: 'confirmacion' | 'recordatorio' | 'mora';
+  asuntoTemplate: string;
+  mensajeTemplate: string;
+}
+
+export interface NotificacionProgramada {
+  id: string;
+  reservaId: string;
+  destinatario: string;
+  email: string;
+  vehiculo: string;
+  fechaInicio: string;
+  sendAt: string;
+  estado: 'pendiente' | 'enviado';
+}
+
+export const PlantillasMock: PlantillaNotificacion[] = [
+  {
+    tipo: 'confirmacion',
+    asuntoTemplate: 'Confirmación de Reserva #{{reservaId}}',
+    mensajeTemplate: 'Hola {{cliente}}, tu reserva para {{vehiculo}} fue confirmada para {{fechas}}.',
+  },
+  {
+    tipo: 'recordatorio',
+    asuntoTemplate: 'Recordatorio de Reserva #{{reservaId}}',
+    mensajeTemplate: 'Hola {{cliente}}, te recordamos tu entrega de {{vehiculo}} para {{fechaInicio}}.',
+  },
+  {
+    tipo: 'mora',
+    asuntoTemplate: 'Alerta de mora - Reserva #{{reservaId}}',
+    mensajeTemplate: 'Hola {{cliente}}, tienes un saldo pendiente asociado a la reserva {{reservaId}}.',
+  },
+];
 
 export const NotificacionesMock: Notificacion[] = [
   {

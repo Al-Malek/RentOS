@@ -1,3 +1,11 @@
+export interface ClienteIncidente {
+  id: string;
+  tipo: 'multa' | 'dano' | 'retraso';
+  descripcion: string;
+  fecha: string;
+  monto?: number;
+}
+
 export interface Cliente {
   id: string;
   nombre: string;
@@ -17,6 +25,7 @@ export interface Cliente {
   totalGastado: number;
   cancelaciones: number;
   score: number;
+  incidentes?: ClienteIncidente[];
 }
 
 export const ClientesMock: Cliente[] = [
@@ -38,7 +47,8 @@ export const ClientesMock: Cliente[] = [
     reservasTotales: 8,
     totalGastado: 2400,
     cancelaciones: 1,
-    score: 85
+    score: 85,
+    incidentes: []
   },
   {
     id: 'cli-002',
@@ -58,7 +68,8 @@ export const ClientesMock: Cliente[] = [
     reservasTotales: 12,
     totalGastado: 3600,
     cancelaciones: 0,
-    score: 100
+    score: 100,
+    incidentes: []
   },
   {
     id: 'cli-003',
@@ -78,7 +89,23 @@ export const ClientesMock: Cliente[] = [
     reservasTotales: 3,
     totalGastado: 900,
     cancelaciones: 2,
-    score: 45
+    score: 45,
+    incidentes: [
+      {
+        id: 'inc-001',
+        tipo: 'multa',
+        descripcion: 'Exceso de velocidad en zona urbana',
+        fecha: '2026-02-14',
+        monto: 180,
+      },
+      {
+        id: 'inc-002',
+        tipo: 'dano',
+        descripcion: 'Raspon lateral reportado en check-out',
+        fecha: '2026-01-22',
+        monto: 140,
+      },
+    ]
   },
   {
     id: 'cli-004',
@@ -98,7 +125,8 @@ export const ClientesMock: Cliente[] = [
     reservasTotales: 6,
     totalGastado: 1800,
     cancelaciones: 0,
-    score: 90
+    score: 90,
+    incidentes: []
   },
   {
     id: 'cli-005',
@@ -118,6 +146,7 @@ export const ClientesMock: Cliente[] = [
     reservasTotales: 1,
     totalGastado: 300,
     cancelaciones: 0,
-    score: 75
+    score: 75,
+    incidentes: []
   }
 ];
