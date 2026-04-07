@@ -32,6 +32,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     { id: 'clientes', label: 'clientes', path: '/dashboard/clientes', icon: '👥' },
     { id: 'notificaciones', label: 'notificaciones', path: '/dashboard/notificaciones', icon: '🔔' },
     { id: 'reportes', label: 'reportes', path: '/dashboard/reportes', icon: '📊' },
+    { id: 'auditoria', label: 'auditoria', path: '/dashboard/auditoria', icon: '🔍' },
+    { id: 'backup', label: 'backup', path: '/dashboard/backup', icon: '💾' },
     { id: 'asistente', label: 'asistente', path: '/dashboard/asistente-ia', icon: '🤖' },
   ];
 
@@ -84,7 +86,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </nav>
 
         <div className="p-6 border-t border-white/5">
-            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">v1.0.4 - 2026</p>
+            <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">v2.0.0 - 2026</p>
         </div>
       </aside>
 

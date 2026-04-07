@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { Card } from '@/components/ui/Card';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -7,17 +8,44 @@ import { ComparisonBadge } from '@/components/analytics/ComparisonBadge';
 import { RevenueBarChart } from '@/components/analytics/RevenueBarChart';
 import { FleetStatusPieChart } from '@/components/analytics/FleetStatusPieChart';
 import { useConfig } from '@/context/ConfigContext';
+import { api } from '@/lib/api';
 
 export default function DashboardPage() {
   const analytics = useAnalytics();
   const { t } = useConfig();
+  const [healthStatus, setHealthStatus] = useState<any>(null);
+
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const health = await api.healthCheck();
+        setHealthStatus(health);
+      } catch (error) {
+        console.error('Health check failed:', error);
+        setHealthStatus({ status: 'error' });
+      }
+    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <MainLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-black italic uppercase mb-2">{t('analytics', 'title')}</h1>
-          <p className="text-gray-500">{t('analytics', 'subtitle')}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-black italic uppercase mb-2">{t('analytics', 'title')}</h1>
+            <p className="text-gray-500">{t('analytics', 'subtitle')}</p>
+          </div>
+          {healthStatus && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+              <div className={`w-2 h-2 rounded-full ${healthStatus.status === 'ok' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {healthStatus.status === 'ok' ? 'Sistema Operativo' : 'Sistema Offline'}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">

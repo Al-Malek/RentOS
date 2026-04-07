@@ -243,6 +243,86 @@ class ApiClient {
   async getMantenimientoPendiente() {
     return this.request('/mantenimiento/pendientes');
   }
+
+  // Auditoría (NUEVO v2.0)
+  async getAuditLogs(filters?: {
+    userId?: string;
+    entity?: string;
+    action?: string;
+  }) {
+    const params = new URLSearchParams();
+    if (filters?.userId) params.append('userId', filters.userId);
+    if (filters?.entity) params.append('entity', filters.entity);
+    if (filters?.action) params.append('action', filters.action);
+    
+    const query = params.toString();
+    return this.request(`/audit${query ? `?${query}` : ''}`);
+  }
+
+  async getAuditByEntity(entity: string, entityId: string) {
+    return this.request(`/audit/entity?entity=${entity}&entityId=${entityId}`);
+  }
+
+  // Reportes (NUEVO v2.0)
+  async getReporteIngresos(filters?: {
+    startDate?: string;
+    endDate?: string;
+    vehiculoId?: number;
+  }) {
+    const params = new URLSearchParams();
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.vehiculoId) params.append('vehiculoId', filters.vehiculoId.toString());
+    
+    const query = params.toString();
+    return this.request(`/reports/ingresos${query ? `?${query}` : ''}`);
+  }
+
+  async getReporteVehiculos() {
+    return this.request('/reports/vehiculos');
+  }
+
+  async getReporteClientes() {
+    return this.request('/reports/clientes');
+  }
+
+  async getReporteOcupacion(filters?: {
+    startDate?: string;
+    endDate?: string;
+  }) {
+    const params = new URLSearchParams();
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    
+    const query = params.toString();
+    return this.request(`/reports/ocupacion${query ? `?${query}` : ''}`);
+  }
+
+  // Backup (NUEVO v2.0)
+  async createBackup() {
+    return this.request('/backup/create', {
+      method: 'POST',
+    });
+  }
+
+  async listBackups() {
+    return this.request('/backup/list');
+  }
+
+  async restoreBackup(filename: string) {
+    return this.request(`/backup/restore/${filename}`, {
+      method: 'POST',
+    });
+  }
+
+  // Health Check (NUEVO v2.0)
+  async healthCheck() {
+    return this.request('/health');
+  }
+
+  async ping() {
+    return this.request('/health/ping');
+  }
 }
 
 export const api = new ApiClient(API_URL);

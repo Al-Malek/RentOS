@@ -13,6 +13,8 @@ const dictionary = {
       tarifas: 'Tarifas',
       calendario: 'Calendario',
       notificaciones: 'Notificaciones',
+      auditoria: 'Auditoría',
+      backup: 'Backup',
       asistente: 'Asistente IA',
       superadmin: 'Super Admin'
     },
@@ -352,6 +354,8 @@ const dictionary = {
       tarifas: 'Rates',
       calendario: 'Calendar',
       notificaciones: 'Notifications',
+      auditoria: 'Audit',
+      backup: 'Backup',
       asistente: 'AI Assistant',
       superadmin: 'Super Admin'
     },
