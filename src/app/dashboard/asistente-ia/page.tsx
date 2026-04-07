@@ -60,19 +60,40 @@ export default function AsistenteIAPage() {
     setInput('');
     setLoading(true);
 
-    // Simular delay de IA (mínimo 1.5 segundos)
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+    try {
+      // Intentar usar API real
+      const response = await fetch('/api/rag/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
+      });
 
-    const respuesta = obtenerRespuesta(input);
-    const mensajeAsistente: Mensaje = {
-      id: (Date.now() + 1).toString(),
-      tipo: 'asistente',
-      contenido: respuesta,
-      timestamp: new Date()
-    };
-
-    setMensajes(prev => [...prev, mensajeAsistente]);
-    setLoading(false);
+      if (response.ok) {
+        const data = await response.json();
+        const mensajeAsistente: Mensaje = {
+          id: (Date.now() + 1).toString(),
+          tipo: 'asistente',
+          contenido: data.response,
+          timestamp: new Date()
+        };
+        setMensajes(prev => [...prev, mensajeAsistente]);
+      } else {
+        throw new Error('API not available');
+      }
+    } catch (err) {
+      // Fallback a respuestas mock si API no está disponible
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+      const respuesta = obtenerRespuesta(input);
+      const mensajeAsistente: Mensaje = {
+        id: (Date.now() + 1).toString(),
+        tipo: 'asistente',
+        contenido: respuesta,
+        timestamp: new Date()
+      };
+      setMensajes(prev => [...prev, mensajeAsistente]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

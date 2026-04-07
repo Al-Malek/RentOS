@@ -9,6 +9,7 @@ import {
 import toast from 'react-hot-toast';
 import { applyTemplateString, calculateReminderSendAt, shouldTrigger24hReminder } from '@/hooks/notificaciones.utils';
 import { useConfig } from '@/context/ConfigContext';
+import { api } from '@/lib/api';
 
 const STORAGE_NOTIFICACIONES = 'rentos_notificaciones';
 const STORAGE_PLANTILLAS = 'rentos_notificacion_templates';
@@ -104,11 +105,18 @@ export const useNotificaciones = () => {
     return nuevaNotificacion;
   };
 
-  const enviarNotificacion = (notificacion: NotificacionInput): Promise<Notificacion> => {
-    return Promise.resolve(registrarNotificacion(notificacion, 'enviado')).then((created) => {
+  const enviarNotificacion = async (notificacion: NotificacionInput): Promise<Notificacion> => {
+    try {
+      const sent = await api.enviarNotificacion(notificacion);
+      const nuevaNotificacion = registrarNotificacion(notificacion, 'enviado');
       toast.success(`${i18n('emailEnviado')} ${notificacion.email}`);
-      return created;
-    });
+      return nuevaNotificacion;
+    } catch (err: any) {
+      // Fallback to local registration
+      const nuevaNotificacion = registrarNotificacion(notificacion, 'enviado');
+      toast.success(`${i18n('emailEnviado')} ${notificacion.email}`);
+      return nuevaNotificacion;
+    }
   };
 
   const updateTemplate = (

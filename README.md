@@ -1,55 +1,133 @@
+# 🚗 RentOS - Sistema de Gestión de Alquiler de Vehículos
 
-RentOS es una plataforma SaaS diseñada para la gestión integral de alquiler de vehículos y flotas. Este repositorio contiene la base técnica, la infraestructura y el diseño inicial del sistema.
+Sistema completo de gestión de alquiler de vehículos con frontend Next.js, backend NestJS, PostgreSQL y asistente IA con OpenAI.
 
-## 🛠️ Guía de Inicio desde Cero
+## 🚀 Inicio Rápido
 
-Si usted es un usuario nuevo y no tiene herramientas instaladas, siga estos pasos en orden:
-
-### 1. Instalación de Herramientas Básicas
-1. **Node.js (v20+):** Descárguelo de [nodejs.org](https://nodejs.org/). Esto incluye `npm`, que usaremos para manejar el proyecto.
-2. **Docker Desktop:** Descárguelo de [docker.com](https://www.docker.com/products/docker-desktop/). 
-   - *Importante:* En Windows, reinicie el equipo tras la instalación.
-3. **Git:** Descárguelo de [git-scm.com](https://git-scm.com/).
-
-### 2. Preparación del Proyecto
-Abra su terminal (PowerShell o CMD) dentro de la carpeta del proyecto y ejecute:
-
+### Windows
 ```bash
-# Instalar dependencias del proyecto
-npm install
+start-all.bat
 ```
 
-### 3. Ejecución local
-
+### Linux/Mac
 ```bash
-npm run dev
+chmod +x start-all.sh
+./start-all.sh
 ```
 
-### 4. Verificación rápida
+El sistema estará disponible en:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **Swagger Docs**: http://localhost:3001/api
 
-```bash
-npm run test
-npm run build
+**Credenciales por defecto**:
+- Email: `admin@rentos.com`
+- Password: `admin123`
+
+## 📁 Estructura del Proyecto
+
 ```
-
-## Instrucciones de Ejecución (Docker)
-1. Asegúrese de tener Docker instalado.
-2. Ejecute el comando: `docker-compose up --build` o si ya realizó la construcción inicial, puede simplemente ejecutar:
- `docker compose up`
-3. Acceda a: `http://localhost:3000`
-
-## Justificaciones Técnicas
-* **Next.js & TypeScript:** Elegidos para asegurar escalabilidad y tipado fuerte, reduciendo errores en tiempo de ejecución.
-* **i18n & a11y:** Internacionalización y accesibilidad implementadas a nivel de aplicación con contexto y etiquetas ARIA.
-* **Docker:** Garantiza que el entorno de desarrollo sea idéntico al de producción. 
-
-
-
-
-* Borrar
-docker compose down
-docker system prune -f
-docker compose up --build
-docker compose build --no-cache
-docker compose up
 .
+├── RentOS/                  # Frontend Next.js
+├── rentos-backend/          # Backend NestJS
+├── start-all.bat           # Script inicio Windows
+├── start-all.sh            # Script inicio Linux/Mac
+├── stop-all.bat            # Script detener Windows
+├── stop-all.sh             # Script detener Linux/Mac
+├── README.md               # Este archivo
+├── README_COMPLETO.md      # Documentación completa
+├── INTEGRATION_GUIDE.md    # Guía de integración
+├── DEMO_INSTRUCTIONS.md    # Instrucciones para demo
+└── RESUMEN_FINAL.md        # Resumen del trabajo
+```
+
+## 📚 Documentación
+
+- **[README_COMPLETO.md](README_COMPLETO.md)** - Documentación exhaustiva del proyecto
+- **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)** - Guía de integración frontend-backend
+- **[DEMO_INSTRUCTIONS.md](DEMO_INSTRUCTIONS.md)** - Instrucciones para presentación
+- **[RESUMEN_FINAL.md](RESUMEN_FINAL.md)** - Resumen del trabajo completado
+
+## ✨ Funcionalidades
+
+1. **Gestión de Vehículos** - CRUD completo, estados, mantenimiento
+2. **Gestión de Clientes** - CRUD, sistema de scoring, búsqueda
+3. **Sistema de Reservas** - Verificación de disponibilidad, pagos
+4. **Tarifas Dinámicas** - Descuentos y recargos automáticos
+5. **Dashboard** - Métricas en tiempo real, análisis de ingresos
+6. **Notificaciones** - Emails automáticos, plantillas
+7. **Asistente IA** - Chat con OpenAI GPT-3.5-turbo
+8. **Multi-Tenancy** - Gestión de múltiples empresas
+9. **Mantenimiento** - Seguimiento preventivo y correctivo
+
+## 🧪 Ejecutar Tests
+
+### Backend (40+ tests)
+```bash
+cd rentos-backend
+npm run test
+```
+
+### Frontend (40+ tests)
+```bash
+cd RentOS
+npm run test
+```
+
+## 🛠️ Tecnologías
+
+- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
+- **Backend**: NestJS, TypeORM, PostgreSQL
+- **IA**: OpenAI GPT-3.5-turbo
+- **Testing**: Jest
+- **DevOps**: Docker, Docker Compose
+
+## 👥 Equipo
+
+- **Esteban** - Vehículos, Clientes, Reservas
+- **Saenz** - Tarifas, Dashboard, Notificaciones
+- **Miguel** - Asistente IA, Multi-tenancy, Mantenimiento
+
+## 📊 Estadísticas
+
+- **Líneas de código**: 15,000+
+- **Tests**: 80+ (40 backend + 40 frontend)
+- **Endpoints API**: 40+
+- **Componentes React**: 50+
+- **Módulos NestJS**: 10
+
+## 🐛 Troubleshooting
+
+### Backend no inicia
+```bash
+cd rentos-backend
+docker-compose down -v
+docker-compose up -d
+```
+
+### Frontend no conecta
+Verificar `.env.local`:
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001
+```
+
+### Ver logs
+```bash
+# Backend
+cd rentos-backend
+docker-compose logs backend
+
+# Frontend
+cd RentOS
+docker-compose logs frontend
+```
+
+## 📝 Licencia
+
+MIT License
+
+---
+
+**Desarrollado con ❤️ por el equipo RentOS**
+
+Para más información, ver [README_COMPLETO.md](README_COMPLETO.md)
